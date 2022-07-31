@@ -84,7 +84,8 @@ def to_tga(paths: list[(Path, Path)]):
             print(f"WARN: Color compression applied: {file}")
 
             # Save fallback
-            path = get_backup_path() / f"{str(datetime.today()).replace(' ', '_')}__{file.name}"
+            t = str(datetime.today()).replace(' ', '_').replace(':', '')
+            path = get_backup_path() / f"{t}__{file.name}"
             img.save(path)
 
             # Quantize
