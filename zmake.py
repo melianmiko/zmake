@@ -195,10 +195,10 @@ def process():
     if path.name.endswith(".bin"):
         print("We think that you want to unpack this file")
         process_unpack(path)
-    elif next(path.iterdir(), False) is False:
+    elif path.is_dir() and next(path.iterdir(), False) is False:
         print("We think that you want to create new project in this empty dir")
         perform_new(path)
-    elif build_tool.is_project(path):
+    elif path.is_dir() and build_tool.is_project(path):
         print("We think that you want... build this project")
         perform_build(path)
     else:
