@@ -9,7 +9,11 @@ from zmake import VERSION
 if os.path.isdir("dist"):
     shutil.rmtree("dist")
 
-subprocess.Popen(["./venv/bin/pyinstaller", "-F", "zmake.py"]).wait()
+pyinstaller = "./venv/bin/pyinstaller"
+if sys.platform == "win32":
+    pyinstaller = "./venv/Scripts/pyinstaller"
+
+subprocess.Popen([pyinstaller, "-F", "zmake.py"]).wait()
 
 with ZipFile(f"dist/ZMake_{VERSION}_{sys.platform}.zip", "w", ZIP_DEFLATED) as f:
     if os.path.isfile("dist/zmake"):
