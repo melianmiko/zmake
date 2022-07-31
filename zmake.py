@@ -163,11 +163,24 @@ def perform_convert(path: Path):
         converter.to_png(paths)
 
 
+def process_unpack(path: Path):
+    dest = Path(str(path)[:-4])
+    if dest.is_dir():
+        print("Folder already exit.")
+        return
+    dest.mkdir()
+
+    with ZipFile(path, "r") as f:
+        f.extractall(dest)
+    perform_convert(dest / "assets")
+
+
 def process():
     if len(sys.argv) < 2:
         print("Usage: zmake PATH, where PATH is file/dir path")
         print("In Windows, you can drag file/dir to this EXE.")
         print()
+        print("- If PATH is bin-file, we'll try to unpack it as watchface")
         print("- If PATH was an empty dir, new project struct will be created")
         print("- If PATH contains app.json, we'll build this project")
         print("- If PATH was file, we'll convert them to PNG/TGA")
@@ -179,7 +192,10 @@ def process():
 
     path = Path(sys.argv[1]).resolve()
 
-    if next(path.iterdir(), False) is False:
+    if path.name.endswith(".bin"):
+        print("We think that you want to unpack this file")
+        process_unpack(path)
+    elif next(path.iterdir(), False) is False:
         print("We think that you want to create new project in this empty dir")
         perform_new(path)
     elif build_tool.is_project(path):
