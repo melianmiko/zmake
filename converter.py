@@ -1,5 +1,6 @@
 import os
 import shutil
+import sys
 from datetime import datetime
 from pathlib import Path
 
@@ -13,7 +14,11 @@ DIRECTION_ASK = None
 
 
 def get_backup_path():
-    file_path = os.path.dirname(os.path.realpath(__file__))
+    if getattr(sys, 'frozen', False):
+        file_path = os.path.dirname(sys.executable)
+    else:
+        file_path = os.path.dirname(__file__)
+
     backup_path = file_path + "/backups"
     if not os.path.isdir(backup_path):
         os.mkdir(backup_path)
