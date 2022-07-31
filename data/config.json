@@ -1,0 +1,7 @@
+{
+  "with_uglifyjs": false,
+  "uglifyjs_params": "",
+  "mk_preview": true,
+  "add_preview_asset": true,
+  "adb_install": true
+}

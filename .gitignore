@@ -1,0 +1,7 @@
+__pycache__
+/dist
+/backups
+/build
+/test
+/venv
+/zmake.spec

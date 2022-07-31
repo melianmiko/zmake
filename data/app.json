@@ -1,0 +1,29 @@
+{
+  "configVersion": "v2",
+  "app": {
+    "appId": 1,
+    "appName": "WatchfaceName",
+    "appType": "watchface",
+    "version": { "code": 1, "name": "1.0" },
+    "vender": "",
+    "description": "",
+    "icon": "images/preview.png"
+  },
+  "permissions": ["gps"],
+  "runtime": {
+    "apiVersion": {
+      "compatible": "1.0.0",
+      "target": "1.0.1",
+      "minVersion": "1.0.0"
+    }
+  },
+  "module": {
+    "watchface": {
+      "path": "watchface/index",
+      "main": 1,
+      "editable": 0,
+      "lockscreen": 1,
+      "hightCost": 0
+    }
+  }
+}
