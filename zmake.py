@@ -23,7 +23,11 @@ elif __file__:
 
 
 def perform_new(path: Path):
-    with open(f"{DATA_PATH}/app.json", "r") as f:
+    inp = ""
+    while inp not in ["w", "a"]:
+        inp = input("Type: W - watchface, A - app?").lower()
+
+    with open(f"{DATA_PATH}/app_{inp}.json", "r") as f:
         app_json = json.load(f)
 
     app_json['app']['appId'] = random.randint(1000, 100000)
@@ -36,7 +40,7 @@ def perform_new(path: Path):
     (path / "assets").mkdir()
     (path / "src").mkdir()
     (path / "lib").mkdir()
-    shutil.copy(f"{DATA_PATH}/template_index.js", path / "src/index.js")
+    shutil.copy(f"{DATA_PATH}/template_index_{inp}.js", path / "src/index.js")
 
 
 def perform_build(path: Path):
@@ -67,17 +71,25 @@ def perform_build(path: Path):
     else:
         shutil.copy(f"{DATA_PATH}/app.js", path / "build/app.js")
 
+    # Fetch config
+    with open(path / "app.json", "r") as f:
+        app_config = json.load(f)
+
+    target_dir = "watchface"
+    if app_config["app"]["appType"] == "app":
+        target_dir = "page"
+
     # Watchface JS
-    if (path / "watchface").is_dir():
-        print("-- Copy exiting 'watchface' dir, without rebuild")
-        shutil.copytree(path / 'watchface', path / 'build/watchface')
+    if (path / target_dir).is_dir():
+        print(f"-- Copy exiting '{target_dir}' dir, without rebuild")
+        shutil.copytree(path / target_dir, path / 'build' / target_dir)
     else:
         content = build_tool.mk_js_content(path)
         content = basement.replace("{content}", content)
         if config["with_uglifyjs"]:
             content = build_tool.mk_run_uglify(content, config['uglifyjs_params'])
 
-        out_dir = path / "build/watchface"
+        out_dir = path / "build" / target_dir
         out_dir.mkdir()
         with (out_dir / "index.js").open("w") as f:
             f.write(comment + "\n")
@@ -93,7 +105,7 @@ def perform_build(path: Path):
         build_tool.mk_preview(path)
         dist_preview = path / "dist/preview.png"
 
-        if config["add_preview_asset"]:
+        if config["add_preview_asset"] and target_dir == "watchface":
             print("-- Add preview.png (128x326) to assets")
             pv = Image.open(path / "dist/preview.png")
             pv.thumbnail((128, 326))
@@ -123,12 +135,16 @@ def perform_build(path: Path):
 
     # Autoinstall
     if config["adb_install"]:
-        print("-- Install via ADB")
-        path = f"//storage/emulated/0/Android/data/com.xiaomi.hm.health/files/watch_skin_local"
-        subprocess.Popen(["adb", "shell", "mkdir", "-p", path]).wait()
-        subprocess.Popen(["adb", "push", dist_zip, path]).wait()
-        subprocess.Popen(["adb", "shell", f"cd {path} && unzip -o {basename}.zip"]).wait()
-        subprocess.Popen(["adb", "shell", "rm", f"{path}/{basename}.zip"]).wait()
+        if target_dir == "watchface":
+            print("-- Install via ADB")
+            path = f"//storage/emulated/0/Android/data/com.xiaomi.hm.health/files/watch_skin_local"
+            subprocess.Popen(["adb", "shell", "mkdir", "-p", path]).wait()
+            subprocess.Popen(["adb", "push", dist_zip, path]).wait()
+            subprocess.Popen(["adb", "shell", f"cd {path} && unzip -o {basename}.zip"]).wait()
+            subprocess.Popen(["adb", "shell", "rm", f"{path}/{basename}.zip"]).wait()
+        else:
+            print("- Copy BIN to sdcard root")
+            subprocess.Popen(["adb", "push", dist_bin, f"/sdcard/{basename}.bin"]).wait()
 
     print('')
     print("Complete")
