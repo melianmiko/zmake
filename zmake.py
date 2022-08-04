@@ -144,7 +144,10 @@ def perform_build(path: Path):
             subprocess.Popen(["adb", "shell", "rm", f"{path}/{basename}.zip"]).wait()
         else:
             print("- Copy BIN to sdcard root")
-            subprocess.Popen(["adb", "push", dist_bin, f"/sdcard/{basename}.bin"]).wait()
+            subprocess.Popen(["adb", "shell", "mkdir -p /sdcard/MiApps"]).wait()
+            subprocess.Popen(["adb", "push", dist_bin, f"/sdcard/MiApps/{basename}.bin"]).wait()
+            if dist_preview is not None:
+                subprocess.Popen(["adb", "push", dist_preview, f"/sdcard/MiApps/{basename}.png"]).wait()
 
     print('')
     print("Complete")

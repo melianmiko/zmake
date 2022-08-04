@@ -36,7 +36,7 @@ def mk_js_content(path: Path):
     out = ''
     for directory in [path / 'lib', path / 'src']:
         if not directory.is_dir():
-            return
+            continue
 
         for file in directory.rglob("**/*.js"):
             out += f"// source: {file}\n"
