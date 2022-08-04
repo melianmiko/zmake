@@ -14,7 +14,7 @@ import build_tool
 import converter
 import tga_io
 
-VERSION = "1.0"
+VERSION = "1.1"
 
 if getattr(sys, 'frozen', False):
     DATA_PATH = os.path.dirname(sys.executable) + "/data"
@@ -189,7 +189,7 @@ def process_unpack(path: Path):
 
 def process():
     if len(sys.argv) < 2:
-        print(f"zmake v{VERSION}dev by melianmiko")
+        print(f"zmake v{VERSION} by melianmiko")
         print('------------------------------------------------------------------')
         print("Usage: zmake PATH, where PATH is file/dir path")
         print("In Windows, you can drag file/dir to this EXE.")
