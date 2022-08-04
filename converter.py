@@ -71,6 +71,8 @@ def prepare_config(paths: list[(Path, Path)]):
 def to_tga(paths: list[(Path, Path)]):
     for file, out in paths:
         img = Image.open(file)
+        mode = 0
+
         if img.format != "PNG":
             print("SKIP: Already converted or not supported", file)
             if file != out:
@@ -79,8 +81,11 @@ def to_tga(paths: list[(Path, Path)]):
             continue
 
         img = img.convert("RGBA")
+        if file.name.endswith(".rgb.png"):
+            print(f"WARN: Compress colors to 16bit")
+            mode = 16
 
-        if not img.getcolors():
+        if not img.getcolors() and mode == 0:
             print(f"WARN: Color compression applied: {file}")
 
             # Save fallback
@@ -100,7 +105,8 @@ def to_tga(paths: list[(Path, Path)]):
             else:
                 print("WARN: Color compression applied to image with transparent parts.")
                 img = img.quantize(256)
-        tga_io.save_tga(img, str(out))
+
+        tga_io.save_tga(img, str(out), mode)
 
 
 def to_png(paths: list[(Path, Path)]):

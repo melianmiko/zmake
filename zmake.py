@@ -135,19 +135,12 @@ def perform_build(path: Path):
 
     # Autoinstall
     if config["adb_install"]:
-        if target_dir == "watchface":
-            print("-- Install via ADB")
-            path = f"//storage/emulated/0/Android/data/com.xiaomi.hm.health/files/watch_skin_local"
-            subprocess.Popen(["adb", "shell", "mkdir", "-p", path]).wait()
-            subprocess.Popen(["adb", "push", dist_zip, path]).wait()
-            subprocess.Popen(["adb", "shell", f"cd {path} && unzip -o {basename}.zip"]).wait()
-            subprocess.Popen(["adb", "shell", "rm", f"{path}/{basename}.zip"]).wait()
-        else:
-            print("- Copy BIN to sdcard root")
-            subprocess.Popen(["adb", "shell", "mkdir -p /sdcard/MiApps"]).wait()
-            subprocess.Popen(["adb", "push", dist_bin, f"/sdcard/MiApps/{basename}.bin"]).wait()
-            if dist_preview is not None:
-                subprocess.Popen(["adb", "push", dist_preview, f"/sdcard/MiApps/{basename}.png"]).wait()
+        print("-- Install via ADB")
+        path = config["adb_path"]
+        subprocess.Popen(["adb", "shell", "mkdir", "-p", path]).wait()
+        subprocess.Popen(["adb", "push", dist_zip, path]).wait()
+        subprocess.Popen(["adb", "shell", f"cd {path} && unzip -o {basename}.zip"]).wait()
+        subprocess.Popen(["adb", "shell", "rm", f"{path}/{basename}.zip"]).wait()
 
     print('')
     print("Complete")
@@ -196,6 +189,8 @@ def process_unpack(path: Path):
 
 def process():
     if len(sys.argv) < 2:
+        print(f"zmake v{VERSION}dev by melianmiko")
+        print('------------------------------------------------------------------')
         print("Usage: zmake PATH, where PATH is file/dir path")
         print("In Windows, you can drag file/dir to this EXE.")
         print()
