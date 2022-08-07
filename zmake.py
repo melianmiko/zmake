@@ -4,6 +4,7 @@ import random
 import shutil
 import subprocess
 import sys
+import traceback
 from datetime import datetime
 from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED
@@ -12,9 +13,9 @@ from PIL import Image
 
 import build_tool
 import converter
-import tga_io
+import image_io
 
-VERSION = "1.1"
+VERSION = "1.2  "
 
 if getattr(sys, 'frozen', False):
     DATA_PATH = os.path.dirname(sys.executable) + "/data"
@@ -81,16 +82,19 @@ def perform_build(path: Path):
 
     # Watchface JS
     if (path / target_dir).is_dir():
-        print(f"-- Copy exiting '{target_dir}' dir, without rebuild")
+        print(f"-- Copy exiting '{target_dir}' dir")
         shutil.copytree(path / target_dir, path / 'build' / target_dir)
-    else:
+
+    if (path / 'src').is_dir():
         content = build_tool.mk_js_content(path)
         content = basement.replace("{content}", content)
         if config["with_uglifyjs"]:
             content = build_tool.mk_run_uglify(content, config['uglifyjs_params'])
 
         out_dir = path / "build" / target_dir
-        out_dir.mkdir()
+        if not out_dir.exists():
+            out_dir.mkdir()
+
         with (out_dir / "index.js").open("w") as f:
             f.write(comment + "\n")
             f.write(f"// Build at {datetime.today()}\n")
@@ -110,7 +114,7 @@ def perform_build(path: Path):
             pv = Image.open(path / "dist/preview.png")
             pv.thumbnail((128, 326))
             pv = pv.convert("RGB").quantize(256)
-            tga_io.save_tga(pv, str(path / "build/assets/preview.png"))
+            image_io.save_auto(pv, path / "build/assets/preview.png", "TGA-RLP")
 
     # BIN
     print("-- Make bin file")
@@ -168,10 +172,8 @@ def perform_convert(path: Path):
 
     print(f"-- Convert {len(paths)} file(s) --")
     if direction == converter.DIRECTION_TGA:
-        print("DIRECTION: PNG -> TGA")
         converter.to_tga(paths)
     elif direction == converter.DIRECTION_PNG:
-        print("DIRECTION: TGA -> PNG")
         converter.to_png(paths)
 
 
@@ -221,4 +223,11 @@ def process():
 
 
 if __name__ == "__main__":
-    process()
+    # noinspection PyBroadException
+    try:
+        process()
+    except Exception:
+        traceback.print_exc()
+        print("FAILED")
+        input()
+

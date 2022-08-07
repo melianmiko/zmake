@@ -38,10 +38,16 @@ def mk_js_content(path: Path):
         if not directory.is_dir():
             continue
 
-        for file in directory.rglob("**/*.js"):
+        for file in sorted(directory.rglob("**/*.js")):
             out += f"// source: {file}\n"
             with file.open("r") as f:
                 out += f.read() + "\n"
+
+    entrypoint = path / 'entrypoint.js'
+    if entrypoint.is_file():
+        out += f"// source: {entrypoint}\n"
+        with entrypoint.open("r") as f:
+            out += f.read() + "\n"
 
     return out
 

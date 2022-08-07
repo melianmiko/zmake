@@ -4,9 +4,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-from PIL import Image
-
-import tga_io
+import image_io
 
 DIRECTION_TGA = True
 DIRECTION_PNG = False
@@ -49,16 +47,14 @@ def prepare_config(paths: list[(Path, Path)]):
     files_png = 0
 
     for file, _ in paths:
-        with file.open("rb") as f:
-            if b"PNG" in f.read(4):
-                files_png += 1
-                if not quantize_required:
-                    # Check color limit
-                    pil = Image.open(file)
-                    if pil.getcolors() is None:
-                        quantize_required = True
-            else:
-                files_tga += 1
+        file_type = image_io.get_format(file)
+        if file_type == "PNG":
+            files_png += 1
+            img, _ = image_io.load_auto(file)
+            if not quantize_required and img.getcolors() is None:
+                quantize_required = True
+        elif file_type.startswith("TGA"):
+            files_tga += 1
 
     if files_png == 0:
         return DIRECTION_PNG, False
@@ -70,22 +66,21 @@ def prepare_config(paths: list[(Path, Path)]):
 
 def to_tga(paths: list[(Path, Path)]):
     for file, out in paths:
-        img = Image.open(file)
-        mode = 0
-
-        if img.format != "PNG":
-            print("SKIP: Already converted or not supported", file)
-            if file != out:
-                print("Copy as RAW")
-                shutil.copy(file, out)
+        img, file_type = image_io.load_auto(file)
+        if file_type != "PNG" and file != out:
+            print(file, "COPY WITHOUT CONVERT")
+            shutil.copy(file, out)
+            continue
+        elif file_type != "PNG":
+            print(file, "SKIP, NOT SUPPORTED")
             continue
 
+        mode = "TGA-RLP"
         img = img.convert("RGBA")
         if file.name.endswith(".rgb.png"):
-            print(f"WARN: Compress colors to 16bit")
-            mode = 16
+            mode = "TGA-16"
 
-        if not img.getcolors() and mode == 0:
+        if not img.getcolors() and mode == "TGA-RLP":
             print(f"WARN: Color compression applied: {file}")
 
             # Save fallback
@@ -106,16 +101,26 @@ def to_tga(paths: list[(Path, Path)]):
                 print("WARN: Color compression applied to image with transparent parts.")
                 img = img.quantize(256)
 
-        tga_io.save_tga(img, str(out), mode)
+        print(file, file_type, "->", mode)
+        image_io.save_auto(img, out, mode)
 
 
 def to_png(paths: list[(Path, Path)]):
     for file, out in paths:
-        try:
-            img = tga_io.load_tga(str(file))
+        img, file_type = image_io.load_auto(file)
+        if file_type != "N/A":
+            print(file, file_type, "-> PNG")
             img.save(out)
-        except AssertionError:
-            print("SKIP: Already converted or not supported:", file)
-            if file != out:
-                print("Copy as RAW")
-                shutil.copy(file, out)
+        elif file != out:
+            print(file, "COPY WITHOUT CONVERT")
+            shutil.copy(file, out)
+        else:
+            print(file, "SKIP, NOT SUPPORTED")
+
+#
+# if __name__ == "__main__":
+#     img, t = image_io.load_auto(Path("test.png"))
+#     image_io.save_auto(img, Path("test.tga"), "TGA-RLP")
+#
+#     img, _ = image_io.load_auto(Path("test.tga"))
+#     image_io.save_auto(img, Path("test_r.png"), "PNG")
