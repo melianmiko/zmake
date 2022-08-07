@@ -74,7 +74,7 @@ def perform_build(path: Path):
 
     # Fetch config
     with open(path / "app.json", "r") as f:
-        app_config = json.load(f)
+        app_config = json.loads(f.read())
 
     target_dir = "watchface"
     if app_config["app"]["appType"] == "app":
