@@ -73,7 +73,7 @@ def perform_build(path: Path):
         shutil.copy(f"{DATA_PATH}/app.js", path / "build/app.js")
 
     # Fetch config
-    with open(path / "app.json", "r") as f:
+    with open(path / "app.json", "r", encoding="utf8") as f:
         app_config = json.loads(f.read())
 
     target_dir = "watchface"
