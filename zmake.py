@@ -15,7 +15,7 @@ import build_tool
 import converter
 import image_io
 
-VERSION = "1.2  "
+VERSION = "1.3"
 
 if getattr(sys, 'frozen', False):
     DATA_PATH = os.path.dirname(sys.executable) + "/data"
@@ -63,7 +63,7 @@ def perform_build(path: Path):
 
     # Base
     (path / "build").mkdir()
-    build_tool.mk_assets(path)
+    build_tool.mk_assets(path, config["def_format"])
     shutil.copy(path / "app.json", path / "build/app.json")
 
     # AppJS
@@ -151,6 +151,9 @@ def perform_build(path: Path):
 
 
 def perform_convert(path: Path):
+    with open(f"{DATA_PATH}/config.json", "r") as f:
+        config = json.load(f)
+
     paths = converter.load_from_path(path)
 
     print("-- Preparing --")
@@ -172,7 +175,7 @@ def perform_convert(path: Path):
 
     print(f"-- Convert {len(paths)} file(s) --")
     if direction == converter.DIRECTION_TGA:
-        converter.to_tga(paths)
+        converter.to_tga(paths, config["def_format"])
     elif direction == converter.DIRECTION_PNG:
         converter.to_png(paths)
 

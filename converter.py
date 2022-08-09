@@ -64,7 +64,7 @@ def prepare_config(paths: list[(Path, Path)]):
         return DIRECTION_ASK, quantize_required
 
 
-def to_tga(paths: list[(Path, Path)]):
+def to_tga(paths: list[(Path, Path)], def_format: str):
     for file, out in paths:
         img, file_type = image_io.load_auto(file)
         if file_type != "PNG" and file != out:
@@ -75,12 +75,17 @@ def to_tga(paths: list[(Path, Path)]):
             print(file, "SKIP, NOT SUPPORTED")
             continue
 
-        mode = "TGA-RLP"
+        mode = def_format
         img = img.convert("RGBA")
         if file.name.endswith(".rgb.png"):
             mode = "TGA-16"
+        if file.name.endswith(".p.png"):
+            mode = "TGA-P"
+        if file.name.endswith(".rlp.png"):
+            mode = "TGA-RLP"
+        print(file, file_type, "->", mode)
 
-        if not img.getcolors() and mode == "TGA-RLP":
+        if not img.getcolors() and mode in ["TGA-P", "TGA-RLP"]:
             print(f"WARN: Color compression applied: {file}")
 
             # Save fallback
@@ -101,7 +106,6 @@ def to_tga(paths: list[(Path, Path)]):
                 print("WARN: Color compression applied to image with transparent parts.")
                 img = img.quantize(256)
 
-        print(file, file_type, "->", mode)
         image_io.save_auto(img, out, mode)
 
 

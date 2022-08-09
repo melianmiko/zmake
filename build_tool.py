@@ -9,7 +9,7 @@ def is_project(path: Path):
     return (path / "app.json").is_file()
 
 
-def mk_assets(path: Path):
+def mk_assets(path: Path, def_format: str):
     print("-- Process assets...")
     source = path / "assets"
     dest = path / "build" / "assets"
@@ -27,7 +27,7 @@ def mk_assets(path: Path):
             print(f"Copy RAW file: {delta}")
             shutil.copy(item, target)
 
-    converter.to_tga(to_convert)
+    converter.to_tga(to_convert, def_format)
 
 
 def mk_js_content(path: Path):
