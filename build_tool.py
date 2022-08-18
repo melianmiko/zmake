@@ -52,6 +52,18 @@ def mk_js_content(path: Path):
     return out
 
 
+def mk_esbuild(sources: Path, dest_dir: Path, params):
+    cmd = ["esbuild"]
+    cmd.extend(params.split(" "))
+    cmd.extend([f"--outdir={dest_dir}", "--platform=node", "--format=iife"])
+
+    for file in sources.rglob("*.js"):
+        cmd.append(str(file))
+
+    print(cmd)
+    subprocess.Popen(cmd).wait()
+
+
 def mk_run_uglify(content: str, params: str):
     print("Run uglifyjs...")
     command = ["uglifyjs"]

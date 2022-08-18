@@ -16,6 +16,13 @@ import converter
 import image_io
 
 VERSION = "1.3"
+INCLUDE_FILES = [
+    "app.json",
+    "README.txt",
+    "LICENSE.txt",
+    "README",
+    "LICENSE"
+]
 
 if getattr(sys, 'frozen', False):
     DATA_PATH = os.path.dirname(sys.executable) + "/data"
@@ -64,7 +71,12 @@ def perform_build(path: Path):
     # Base
     (path / "build").mkdir()
     build_tool.mk_assets(path, config["def_format"])
-    shutil.copy(path / "app.json", path / "build/app.json")
+
+    for fn in INCLUDE_FILES:
+        p = path / fn
+        if p.exists():
+            print("Copy file", fn)
+            shutil.copy(p, path / "build" / fn)
 
     # AppJS
     if (path / "app.js").is_file():
@@ -82,8 +94,12 @@ def perform_build(path: Path):
 
     # Watchface JS
     if (path / target_dir).is_dir():
-        print(f"-- Copy exiting '{target_dir}' dir")
-        shutil.copytree(path / target_dir, path / 'build' / target_dir)
+        if config["esbuild"]:
+            print(f"-- Process exiting {target_dir} with esbuild")
+            build_tool.mk_esbuild(path / target_dir, path / "build" / target_dir, config["esbuild_params"])
+        else:
+            print(f"-- Copy exiting '{target_dir}' dir")
+            shutil.copytree(path / target_dir, path / 'build' / target_dir)
 
     if (path / 'src').is_dir():
         content = build_tool.mk_js_content(path)
@@ -105,16 +121,19 @@ def perform_build(path: Path):
 
     # Preview
     dist_preview = None
-    if config["mk_preview"]:
-        build_tool.mk_preview(path)
-        dist_preview = path / "dist/preview.png"
+    try:
+        if config["mk_preview"]:
+            build_tool.mk_preview(path)
+            dist_preview = path / "dist/preview.png"
 
-        if config["add_preview_asset"] and target_dir == "watchface":
-            print("-- Add preview.png (128x326) to assets")
-            pv = Image.open(path / "dist/preview.png")
-            pv.thumbnail((128, 326))
-            pv = pv.convert("RGB").quantize(256)
-            image_io.save_auto(pv, path / "build/assets/preview.png", "TGA-RLP")
+            if config["add_preview_asset"] and target_dir == "watchface":
+                print("-- Add preview.png (128x326) to assets")
+                pv = Image.open(path / "dist/preview.png")
+                pv.thumbnail((128, 326))
+                pv = pv.convert("RGB").quantize(256)
+                image_io.save_auto(pv, path / "build/assets/preview.png", "TGA-RLP")
+    except AssertionError:
+        print("PREVIEW FAILED")
 
     # BIN
     print("-- Make bin file")
