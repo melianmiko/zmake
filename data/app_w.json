@@ -7,7 +7,7 @@
     "version": { "code": 1, "name": "1.0" },
     "vender": "",
     "description": "",
-    "icon": "images/preview.png"
+    "icon": "preview.png"
   },
   "permissions": ["gps"],
   "runtime": {

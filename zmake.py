@@ -15,7 +15,7 @@ import build_tool
 import converter
 import image_io
 
-VERSION = "1.3"
+VERSION = "1.4"
 INCLUDE_FILES = [
     "app.json",
     "README.txt",
