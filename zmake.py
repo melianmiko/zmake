@@ -80,7 +80,13 @@ def perform_build(path: Path):
 
     # AppJS
     if (path / "app.js").is_file():
-        shutil.copy(path / "app.js", path / "build/app.js")
+        if config["esbuild"]:
+            build_tool.mk_esbuild(path / "app.js",
+                                  path / "build",
+                                  config["esbuild_params"],
+                                  comment)
+        else:
+            shutil.copy(path / "app.js", path / "build/app.js")
     else:
         shutil.copy(f"{DATA_PATH}/app.js", path / "build/app.js")
 
@@ -96,7 +102,10 @@ def perform_build(path: Path):
     if (path / target_dir).is_dir():
         if config["esbuild"]:
             print(f"-- Process exiting {target_dir} with esbuild")
-            build_tool.mk_esbuild(path / target_dir, path / "build" / target_dir, config["esbuild_params"])
+            build_tool.mk_esbuild(path / target_dir,
+                                  path / "build" / target_dir,
+                                  config["esbuild_params"],
+                                  comment)
         else:
             print(f"-- Copy exiting '{target_dir}' dir")
             shutil.copytree(path / target_dir, path / 'build' / target_dir)

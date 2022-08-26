@@ -65,6 +65,13 @@ def prepare_config(paths: list[(Path, Path)]):
 
 
 def to_tga(paths: list[(Path, Path)], def_format: str):
+    mode_table = {
+        "rgb": "TGA-16",
+        "rgba": "TGA-32",
+        "p": "TGA-P",
+        "rlp": "TGA-RLP"
+    }
+
     for file, out in paths:
         img, file_type = image_io.load_auto(file)
         if file_type != "PNG" and file != out:
@@ -77,12 +84,13 @@ def to_tga(paths: list[(Path, Path)], def_format: str):
 
         mode = def_format
         img = img.convert("RGBA")
-        if file.name.endswith(".rgb.png"):
-            mode = "TGA-16"
-        if file.name.endswith(".p.png"):
-            mode = "TGA-P"
-        if file.name.endswith(".rlp.png"):
-            mode = "TGA-RLP"
+        for a in mode_table:
+            if file.name.endswith(f".{a}.png") or f".{a}/" in str(file):
+                mode = mode_table[a]
+                break
+
+        if file_type == mode:
+            continue
         print(file, file_type, "->", mode)
 
         if not img.getcolors() and mode in ["TGA-P", "TGA-RLP"]:
@@ -112,6 +120,10 @@ def to_tga(paths: list[(Path, Path)], def_format: str):
 def to_png(paths: list[(Path, Path)]):
     for file, out in paths:
         img, file_type = image_io.load_auto(file)
+
+        if file_type == "PNG":
+            continue
+
         if file_type != "N/A":
             print(file, file_type, "-> PNG")
             img.save(out)
@@ -121,10 +133,7 @@ def to_png(paths: list[(Path, Path)]):
         else:
             print(file, "SKIP, NOT SUPPORTED")
 
-#
-# if __name__ == "__main__":
-#     img, t = image_io.load_auto(Path("test.png"))
-#     image_io.save_auto(img, Path("test.tga"), "TGA-RLP")
-#
-#     img, _ = image_io.load_auto(Path("test.tga"))
-#     image_io.save_auto(img, Path("test_r.png"), "PNG")
+
+if __name__ == "__main__":
+    img, t = image_io.load_auto(Path("test.png"))
+    image_io.save_auto(img, Path("test.tga"), "TGA-RGBA")

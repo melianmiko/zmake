@@ -32,7 +32,7 @@ def load_auto(path: Path):
         if header == PNG_SIGNATURE:
             return Image.open(path), "PNG"
         elif header[2] == 2:
-            return tga_load.load_truecolor_tga(f), "TGA-16"
+            return tga_load.load_truecolor_tga(f)
         elif header[2] == 1:
             return tga_load.load_palette_tga(f), "TGA-P"
         elif header[2] == 9:
@@ -49,7 +49,10 @@ def save_auto(img: Image.Image, out: Path, dest_type: str):
         tga_save.save_palette_tga(img, out)
         return True
     elif dest_type == "TGA-16":
-        tga_save.save_truecolor_tga(img, out)
+        tga_save.save_truecolor_tga(img, out, 16)
+        return True
+    elif dest_type == "TGA-32":
+        tga_save.save_truecolor_tga(img, out, 32)
         return True
     elif dest_type == "TGA-RLP":
         tga_save.save_rl_palette_tga(img, out)

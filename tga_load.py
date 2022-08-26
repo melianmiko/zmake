@@ -119,11 +119,18 @@ def load_truecolor_tga(f):
 
             unpacked.append((int(r * 255/31),
                              int(g * 255/63),
-                             int(b * 255/31)))
+                             int(b * 255/31),
+                             255))
+    elif colormode == 32:
+        unpacked = []
+        for i in range(height * width):
+            b, g, r, a = f.read(4)
+            unpacked.append((r, g, b, a))
     else:
         raise Exception("Not implemented")
 
-    image = Image.new("RGB", (width, height))
+    image = Image.new("RGBA", (width, height))
     # noinspection PyTypeChecker
     image.putdata(unpacked)
-    return image
+
+    return image, f"TGA-{colormode}"

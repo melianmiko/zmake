@@ -52,15 +52,19 @@ def mk_js_content(path: Path):
     return out
 
 
-def mk_esbuild(sources: Path, dest_dir: Path, params):
+def mk_esbuild(sources: Path, dest_dir: Path, params, banner):
     cmd = ["esbuild"]
     cmd.extend(params.split(" "))
     cmd.extend([f"--outdir={dest_dir}", "--platform=node", "--format=iife"])
 
-    for file in sources.rglob("*.js"):
-        cmd.append(str(file))
+    cmd.extend([f"--banner:js={banner}"])
 
-    print(cmd)
+    if sources.is_file():
+        cmd.append(str(sources))
+    else:
+        for file in sources.rglob("*.js"):
+            cmd.append(str(file))
+
     subprocess.Popen(cmd).wait()
 
 

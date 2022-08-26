@@ -3,7 +3,7 @@ from pathlib import Path
 from PIL import Image
 
 
-def save_truecolor_tga(img: Image.Image, path: Path):
+def save_truecolor_tga(img: Image.Image, path: Path, depth):
     img = img.convert("RGBA")
     data = bytearray()
 
@@ -13,7 +13,8 @@ def save_truecolor_tga(img: Image.Image, path: Path):
     data.extend(b'\x00' * 9)                                            # Palette config, origin
     data.extend(img.width.to_bytes(2, byteorder="little"))              # width
     data.extend(img.height.to_bytes(2, byteorder="little"))             # height
-    data.extend(b'\x10\x20')                                            # misc
+    data.append(depth)                                                  # color mode
+    data.append(32)                                                     # misc
 
     # ID data
     data.extend(b"\x53\x4f\x4d\x48")
@@ -21,12 +22,18 @@ def save_truecolor_tga(img: Image.Image, path: Path):
     data.extend(b"\0" * 40)
 
     # Image data
-    for pixel in img.getdata():
-        r = round(31/255 * pixel[0])
-        g = round(63/255 * pixel[1])
-        b = round(31/255 * pixel[2])
-        data.append(((g & 0b111) << 5) + b)
-        data.append((r << 3) + (g >> 3))
+    if depth == 16:
+        for pixel in img.getdata():
+            r = round(31/255 * pixel[0])
+            g = round(63/255 * pixel[1])
+            b = round(31/255 * pixel[2])
+            data.append(((g & 0b111) << 5) + b)
+            data.append((r << 3) + (g >> 3))
+    elif depth == 32:
+        for r, g, b, a in img.getdata():
+            data.extend([b, g, r, a])
+    else:
+        raise ValueError("Not supported")
 
     with open(path, "wb") as f:
         f.write(data)
