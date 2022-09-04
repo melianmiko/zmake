@@ -4,7 +4,7 @@ import subprocess
 import sys
 from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED
-from zmake import VERSION
+from zmake.__main__ import VERSION
 
 if os.path.isdir("dist"):
     shutil.rmtree("dist")
@@ -13,7 +13,7 @@ pyinstaller = "./venv/bin/pyinstaller"
 if sys.platform == "win32":
     pyinstaller = "./venv/Scripts/pyinstaller"
 
-subprocess.Popen([pyinstaller, "-F", "zmake.py"]).wait()
+subprocess.Popen([pyinstaller, "-n", "zmake", "-F", "zmake/__main__.py"]).wait()
 
 with ZipFile(f"dist/ZMake_{VERSION}_{sys.platform}.zip", "w", ZIP_DEFLATED) as f:
     if os.path.isfile("dist/zmake"):

@@ -2,8 +2,7 @@ from pathlib import Path
 
 from PIL import Image
 
-import tga_load
-import tga_save
+from zmake import tga_save, tga_load
 
 PNG_SIGNATURE = b"\211PNG"
 

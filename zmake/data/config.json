@@ -1,11 +1,11 @@
 {
   "def_format": "TGA-P",
   "with_uglifyjs": false,
-  "uglifyjs_params": "",
-  "mk_preview": false,
   "esbuild": false,
-  "esbuild_params": "--bundle",
+  "mk_preview": false,
   "add_preview_asset": false,
   "adb_install": false,
+  "uglifyjs_params": "",
+  "esbuild_params": "--bundle",
   "adb_path": "/storage/emulated/0/Android/data/com.xiaomi.hm.health/files/watch_skin_local"
 }
