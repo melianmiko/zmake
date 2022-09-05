@@ -46,9 +46,9 @@ class ZMakeContext:
 
         source_dirname = "page" if inp == "a" else "watchface"
 
-        with (self.path / "app.json").open("w") as f:
+        with (self.path / "app.json").open("w", encoding="utf8") as f:
             app_json = json.loads(utils.get_app_asset(f"app_{inp}.json"))
-            app_json['app']['appId'] = random.randint(0x0000FFFF, 0xFFFFFFFF)
+            app_json['app']['appId'] = random.randint(0x0000FFFF, 0x7FFFFFFF)
             app_json['app']['appName'] = self.path.name
             app_json['app']['vender'] = os.getlogin()
             f.write(json.dumps(app_json, indent=2, sort_keys=True))
@@ -56,7 +56,8 @@ class ZMakeContext:
         for n in ["assets", source_dirname]:
             (self.path / n).mkdir()
 
-        shutil.copy(utils.APP_PATH / "data" / f"template_index_{inp}.js", self.path / source_dirname)
+        shutil.copy(utils.APP_PATH / "data" / f"template_index_{inp}.js",
+                    self.path / source_dirname / "index.js")
 
     def process_bin(self):
         dest = Path(str(self.path)[:-4])
@@ -162,7 +163,7 @@ class ZMakeContext:
 
     def merge_app_config(self):
         print("Use config overlay")
-        with (self.path / "zmake.json").open("r") as f:
+        with (self.path / "zmake.json").open("r", encoding="utf8") as f:
             overlay = json.loads(f.read())
 
         for i in overlay:

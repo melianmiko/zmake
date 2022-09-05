@@ -2,6 +2,7 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED
 
@@ -19,6 +20,18 @@ LIST_COMMON_FILES = [
 ]
 
 
+def format_executable(n):
+    if sys.platform == "win32":
+        return f"{n}.exe"
+    return n
+
+
+def format_batch(n):
+    if sys.platform == "win32":
+        return f"{n}.cmd"
+    return n
+
+
 def _js_process(path: Path, dest: Path, context: ZMakeContext,
                 with_banner=True):
 
@@ -29,7 +42,7 @@ def _js_process(path: Path, dest: Path, context: ZMakeContext,
         source_paths = list(path.rglob("*.js"))
 
     if context.config["esbuild"]:
-        command = ["esbuild"]
+        command = [format_batch("esbuild")]
         params = context.config['esbuild_params']
 
         if params != "":
@@ -48,7 +61,7 @@ def _js_process(path: Path, dest: Path, context: ZMakeContext,
 
     for source in source_paths:
         if context.config["with_uglifyjs"]:
-            command = ["uglifyjs"]
+            command = [format_batch("uglifyjs")]
             params = context.config['uglifyjs_params']
 
             if params != "":
@@ -156,12 +169,12 @@ def handle_app(context: ZMakeContext):
         entrypoint = context.path / 'entrypoint.js'
         if entrypoint.is_file():
             out += f"// source: {entrypoint}\n"
-            with entrypoint.open("r") as f:
+            with entrypoint.open("r", encoding="utf8") as f:
                 out += f.read() + "\n"
 
         out = utils.get_app_asset("basement.js").replace("{content}", out)
         fn = context.path / "build" / target_dir / "index.js"
-        with open(fn, "w") as f:
+        with open(fn, "w", encoding="utf8") as f:
             f.write(out)
 
         _js_process(fn, context.path / "build" / target_dir, context)
@@ -173,7 +186,7 @@ def zepp_preview(context: ZMakeContext):
         print("Skip, disabled")
         return
 
-    subprocess.Popen(["zepp-preview",
+    subprocess.Popen([format_batch("zepp-preview"),
                       "-o", context.path / "dist",
                       "--gif",
                       context.path / "build"]).wait()
@@ -222,7 +235,8 @@ def adb_install(context: ZMakeContext):
     basename = context.path.name
     dist_zip = context.path / "dist" / f"{basename}.zip"
 
-    subprocess.Popen(["adb", "shell", "mkdir", "-p", path]).wait()
-    subprocess.Popen(["adb", "push", dist_zip, path]).wait()
-    subprocess.Popen(["adb", "shell", f"cd {path} && unzip -o {basename}.zip"]).wait()
-    subprocess.Popen(["adb", "shell", "rm", f"{path}/{basename}.zip"]).wait()
+    adb = format_executable("adb")
+    subprocess.Popen([adb, "shell", "mkdir", "-p", path]).wait()
+    subprocess.Popen([adb, "push", dist_zip, path]).wait()
+    subprocess.Popen([adb, "shell", f"cd {path} && unzip -o {basename}.zip"]).wait()
+    subprocess.Popen([adb, "shell", "rm", f"{path}/{basename}.zip"]).wait()

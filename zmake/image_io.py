@@ -30,11 +30,11 @@ def load_auto(path: Path):
 
         if header == PNG_SIGNATURE:
             return Image.open(path), "PNG"
-        elif header[2] == 2:
+        elif header[1] == 0 and header[2] == 2:
             return tga_load.load_truecolor_tga(f)
-        elif header[2] == 1:
+        elif header[1] == 1 and header[2] == 1:
             return tga_load.load_palette_tga(f), "TGA-P"
-        elif header[2] == 9:
+        elif header[1] == 1 and header[2] == 9:
             return tga_load.load_rl_palette_tga(f), "TGA-RLP"
         else:
             return None, "N/A"

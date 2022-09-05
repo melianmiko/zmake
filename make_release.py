@@ -22,5 +22,5 @@ with ZipFile(f"dist/ZMake_{VERSION}_{sys.platform}.zip", "w", ZIP_DEFLATED) as f
         f.write("dist/zmake.exe", "zmake.exe")
 
     f.write('GUIDE.txt', 'GUIDE.txt')
-    for ff in Path("data").rglob("**/*"):
+    for ff in Path("zmake/data").rglob("**/*"):
         f.write(ff)
