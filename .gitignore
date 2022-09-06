@@ -5,3 +5,6 @@ __pycache__
 /test
 /venv
 /zmake.spec
+
+*~
+
