@@ -32,14 +32,18 @@ def format_batch(n):
     return n
 
 
-def _js_process(path: Path, dest: Path, context: ZMakeContext,
+def _js_process(path: Path, dest: Path, context: ZMakeContext, target_dir: str,
                 with_banner=True):
 
-    source_paths = []
     if path.is_file():
         source_paths = [path]
     else:
-        source_paths = list(path.rglob("*.js"))
+        source_paths = list(path.rglob("**/*.js"))
+
+    for file in path.rglob("**/*"):
+        if file.is_dir():
+            rel_name = str(file)[len(str(path)) + 1:]
+            os.mkdir(dest / rel_name)
 
     if context.config["esbuild"]:
         command = [format_batch("esbuild")]
@@ -60,6 +64,10 @@ def _js_process(path: Path, dest: Path, context: ZMakeContext,
             source_paths[i] = dest / source_paths[i].name
 
     for source in source_paths:
+        rel_name = str(source)[str(source).index(f"{target_dir}/") + len(target_dir) + 1:]
+        if target_dir == "":
+            rel_name = source.name
+
         if context.config["with_uglifyjs"]:
             command = [format_batch("uglifyjs")]
             params = context.config['uglifyjs_params']
@@ -67,15 +75,17 @@ def _js_process(path: Path, dest: Path, context: ZMakeContext,
             if params != "":
                 command.extend(params.split(" "))
 
-            command.extend(["-o", dest / source.name, source])
+            command.extend(["-o", dest / rel_name, source])
             p = subprocess.run(command)
             assert p.returncode == 0
 
         if with_banner:
             with open(source, "r") as f:
                 content = utils.get_app_asset("comment.js") + "\n" + f.read()
-            with open(dest / source.name, "w") as f:
+            with open(dest / rel_name, "w") as f:
                 f.write(content)
+        else:
+            shutil.copy(source, dest / rel_name)
 
 
 @build_handler("Prepare")
@@ -136,7 +146,10 @@ def common_files(context: ZMakeContext):
         return
 
     # Use user-defined app.js
-    _js_process(context.path / "app.js", context.path / "build", context)
+    _js_process(context.path / "app.js",
+                context.path / "build",
+                context,
+                "")
 
 
 @build_handler("Make pages/watchface")
@@ -153,7 +166,8 @@ def handle_app(context: ZMakeContext):
     if (context.path / target_dir).is_dir():
         _js_process(context.path / target_dir,
                     context.path / "build" / target_dir,
-                    context)
+                    context,
+                    target_dir)
 
     if (context.path / "src").is_dir():
         out = ""
@@ -177,7 +191,10 @@ def handle_app(context: ZMakeContext):
         with open(fn, "w", encoding="utf8") as f:
             f.write(out)
 
-        _js_process(fn, context.path / "build" / target_dir, context)
+        _js_process(fn,
+                    context.path / "build" / target_dir,
+                    context,
+                    target_dir)
 
 
 @build_handler("Preview")

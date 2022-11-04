@@ -4,11 +4,11 @@ from pathlib import Path
 
 from zmake import ZMakeContext
 
-VERSION = "v1.5"
+VERSION = "v1.6-dev"
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print(f"zmake v{VERSION} by melianmiko")
+        print(f"zmake {VERSION} by melianmiko")
         print('------------------------------------------------------------------')
         print("Usage: zmake PATH, where PATH is file/dir path")
         print("In Windows, you can drag file/dir to this EXE.")
