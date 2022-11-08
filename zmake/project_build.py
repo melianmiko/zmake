@@ -80,9 +80,9 @@ def _js_process(path: Path, dest: Path, context: ZMakeContext, target_dir: str,
             assert p.returncode == 0
 
         if with_banner:
-            with open(source, "r") as f:
+            with open(source, "r", encoding="utf8") as f:
                 content = utils.get_app_asset("comment.js") + "\n" + f.read()
-            with open(dest / rel_name, "w") as f:
+            with open(dest / rel_name, "w", encoding="utf8") as f:
                 f.write(content)
         else:
             shutil.copy(source, dest / rel_name)
