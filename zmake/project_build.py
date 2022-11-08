@@ -64,8 +64,10 @@ def _js_process(path: Path, dest: Path, context: ZMakeContext, target_dir: str,
             source_paths[i] = dest / source_paths[i].name
 
     for source in source_paths:
-        rel_name = str(source)[str(source).index(f"{target_dir}/") + len(target_dir) + 1:]
-        if target_dir == "":
+        try:
+            assert target_dir != ""
+            rel_name = str(source)[str(source).index(f"{target_dir}/") + len(target_dir) + 1:]
+        except (ValueError, AssertionError):
             rel_name = source.name
 
         if context.config["with_uglifyjs"]:
