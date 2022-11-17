@@ -121,7 +121,7 @@ def handle_assets(context: ZMakeContext):
             image, file_type = image_io.load_auto(file)
             target_type = context.get_img_target_type(file)
             if file_type == target_type or file_type == "N/A":
-                print("Copy asset as is", file)
+                context.logger.info(f"Copy asset as is {file}")
                 shutil.copy(file, dest / rel_name)
                 continue
 
@@ -130,7 +130,7 @@ def handle_assets(context: ZMakeContext):
 
             image_io.save_auto(image, dest / rel_name, target_type)
         except Exception as e:
-            print(f"FAILED, file {file}")
+            context.logger.exception(f"FAILED, file {file}")
             raise e
 
 
@@ -139,7 +139,7 @@ def common_files(context: ZMakeContext):
     for fn in LIST_COMMON_FILES:
         p = context.path / fn
         if p.exists():
-            print("Copy file", fn)
+            context.logger.info(f"Copy file {fn}")
             shutil.copy(p, context.path / "build" / fn)
 
     # Use our app.js
@@ -202,7 +202,7 @@ def handle_app(context: ZMakeContext):
 @build_handler("Preview")
 def zepp_preview(context: ZMakeContext):
     if not context.config["mk_preview"]:
-        print("Skip, disabled")
+        context.logger.info("Skip, disabled")
         return
 
     subprocess.Popen([format_batch("zepp-preview"),
@@ -214,7 +214,7 @@ def zepp_preview(context: ZMakeContext):
     assert (context.path / "dist/preview.gif").is_file()
 
     if context.config["add_preview_asset"] and (context.path / "build" / "watchface").is_dir():
-        print("Add preview.png (128x326) to assets")
+        context.logger.info("Add preview.png (128x326) to assets")
         pv = Image.open(context.path / "dist/preview.png")
         pv.thumbnail((128, 326))
         pv = pv.convert("RGB").quantize(256)
@@ -246,7 +246,7 @@ def package(context: ZMakeContext):
 @build_handler("ADB Install")
 def adb_install(context: ZMakeContext):
     if not context.config["adb_install"]:
-        print("Skip, disabled")
+        context.logger.info("Skip, disabled")
         return
 
     path = context.config["adb_path"]

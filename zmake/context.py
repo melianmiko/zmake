@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import shutil
 from pathlib import Path
@@ -21,6 +22,7 @@ class ZMakeContext:
     def __init__(self, path: Path):
         self.path = path
         self.config = json.loads(utils.get_app_asset("config.json"))
+        self.logger = logging.getLogger("zmake")
 
         if (path / "zmake.json").is_file():
             self.merge_app_config()

@@ -1,3 +1,4 @@
+import logging
 import sys
 import traceback
 from pathlib import Path
@@ -7,6 +8,9 @@ from zmake import ZMakeContext
 VERSION = "v1.6-dev"
 
 if __name__ == "__main__":
+
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
+
     if len(sys.argv) < 2:
         print(f"zmake {VERSION} by melianmiko")
         print('------------------------------------------------------------------')
