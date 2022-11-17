@@ -18,34 +18,50 @@ def build_handler(name):
     return _w
 
 
+ASK_PROJECT_TYPE = """Select new project type:
+w - Watchface
+a - Application"""
+
+ASK_CONVERT_DIRECTION = """This dir contains both converted and non-converted images
+Tell what do you want:
+1 - PNG -> TGA
+2 - TGA -> PNG"""
+
+
 class ZMakeContext:
     def __init__(self, path: Path):
+        self.target_dir = ""
         self.path = path
         self.config = json.loads(utils.get_app_asset("config.json"))
+        self.app_json = {}
         self.logger = logging.getLogger("zmake")
 
         if (path / "zmake.json").is_file():
             self.merge_app_config()
 
+    def ask_question(self, message, options):
+        self.logger.info(message)
+        result = ""
+        while result not in options:
+            result = input(f"{options} > ")
+        return result
+
     def perform_auto(self):
         if self.path.name.endswith(".bin"):
-            print("We think that you want to unpack this file")
+            self.logger.info("We think that you want to unpack this file")
             self.process_bin()
         elif self.path.is_dir() and next(self.path.iterdir(), False) is False:
-            print("We think that you want to create new project in this empty dir")
+            self.logger.info("We think that you want to create new project in this empty dir")
             self.process_empty()
         elif self.path.is_dir() and (self.path / "app.json").is_file():
-            print("We think that you want... build this project")
+            self.logger.info("We think that you want... build this project")
             self.process_project()
         else:
-            print("We think that you want... convert some images")
+            self.logger.info("We think that you want... convert some images")
             self.process_convert_auto()
 
     def process_empty(self):
-        inp = ""
-        while inp not in ["w", "a"]:
-            inp = input("Type: W - watchface, A - app?").lower()
-
+        inp = self.ask_question(ASK_PROJECT_TYPE, ["w", "a"])
         source_dirname = "page" if inp == "a" else "watchface"
 
         with (self.path / "app.json").open("w", encoding="utf8") as f:
@@ -92,19 +108,13 @@ class ZMakeContext:
                 files_tga += 1
 
         if files_tga == 0:
-            print("Direction: PNG -> TGA")
+            self.logger.info("Direction: PNG -> TGA")
             return self.process_encode_images()
         elif files_png == 0:
-            print("Direction: TGA -> PNG")
+            self.logger.info("Direction: TGA -> PNG")
             return self.process_decode_images()
 
-        print("This dir contains both converted and non-converted images")
-        print("Tell what do you want:")
-        print("1 - PNG -> TGA")
-        print("2 - TGA -> PNG")
-        v = ""
-        while v not in ["1", "2"]:
-            v = input("Enter your choice [1,2]: ")
+        v = self.ask_question(ASK_CONVERT_DIRECTION, ["1", "2"])
 
         if v == "1":
             return self.process_encode_images()
@@ -144,7 +154,7 @@ class ZMakeContext:
 
                 image_io.save_auto(image, file, target_type)
             except Exception as e:
-                print(f"FAILED, file {file}")
+                self.logger.exception(f"FAILED, file {file}")
                 raise e
 
     def process_decode_images(self):
@@ -160,11 +170,11 @@ class ZMakeContext:
 
                 image.save(file)
             except Exception as e:
-                print(f"FAILED, file {file}")
+                self.logger.exception(f"FAILED, file {file}")
                 raise e
 
     def merge_app_config(self):
-        print("Use config overlay")
+        self.logger.debug("Use config overlay")
         with (self.path / "zmake.json").open("r", encoding="utf8") as f:
             overlay = json.loads(f.read())
 
@@ -172,7 +182,15 @@ class ZMakeContext:
             self.config[i] = overlay[i]
 
     def process_project(self):
+        with open(self.path / "app.json", "r", encoding="utf8") as f:
+            self.app_json = json.loads(f.read())
+
+        self.target_dir = "watchface"
+        if self.app_json["app"]["appType"] == "app":
+            self.target_dir = "page"
+
         for name, func in BUILD_HANDLERS:
-            print("---", name)
+            self.logger.info(f"-- Stage: {name}")
             func(self)
 
+        self.logger.info("Completed without error.")

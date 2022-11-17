@@ -1,9 +1,7 @@
-import json
 import os
 import shutil
 import subprocess
 import sys
-from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED
 
 from PIL import Image
@@ -32,62 +30,13 @@ def format_batch(n):
     return n
 
 
-def _js_process(path: Path, dest: Path, context: ZMakeContext, target_dir: str,
-                with_banner=True):
-
-    if path.is_file():
-        source_paths = [path]
-    else:
-        source_paths = list(path.rglob("**/*.js"))
-
-    for file in path.rglob("**/*"):
-        if file.is_dir():
-            rel_name = str(file)[len(str(path)) + 1:]
-            os.mkdir(dest / rel_name)
-
-    if context.config["esbuild"]:
-        command = [format_batch("esbuild")]
-        params = context.config['esbuild_params']
-
-        if params != "":
-            command.extend(params.split(" "))
-
-        command.extend(["--platform=node",
-                        "--allow-overwrite",
-                        f"--outdir={dest}",
-                        "--format=iife"])
-        command.extend(source_paths)
-        p = subprocess.run(command)
-        assert p.returncode == 0
-
-        for i in range(len(source_paths)):
-            source_paths[i] = dest / source_paths[i].name
-
-    for source in source_paths:
-        try:
-            assert target_dir != ""
-            rel_name = str(source)[str(source).index(f"{target_dir}/") + len(target_dir) + 1:]
-        except (ValueError, AssertionError):
-            rel_name = source.name
-
-        if context.config["with_uglifyjs"]:
-            command = [format_batch("uglifyjs")]
-            params = context.config['uglifyjs_params']
-
-            if params != "":
-                command.extend(params.split(" "))
-
-            command.extend(["-o", dest / rel_name, source])
-            p = subprocess.run(command)
-            assert p.returncode == 0
-
-        if with_banner:
-            with open(source, "r", encoding="utf8") as f:
-                content = utils.get_app_asset("comment.js") + "\n" + f.read()
-            with open(dest / rel_name, "w", encoding="utf8") as f:
-                f.write(content)
-        else:
-            shutil.copy(source, dest / rel_name)
+def run_ext_tool(command, context: ZMakeContext):
+    p = subprocess.run(command, capture_output=True, text=True)
+    if p.stdout != "":
+        context.logger.info(p.stdout)
+    if p.stderr != "":
+        context.logger.error(p.stderr)
+    assert p.returncode == 0
 
 
 @build_handler("Prepare")
@@ -102,6 +51,9 @@ def prepare(context: ZMakeContext):
 
     path_build.mkdir()
     path_dist.mkdir()
+
+    # Prepare JS target dir
+    (path_build / context.target_dir).mkdir()
 
 
 @build_handler("Convert assets")
@@ -139,64 +91,112 @@ def common_files(context: ZMakeContext):
     for fn in LIST_COMMON_FILES:
         p = context.path / fn
         if p.exists():
-            context.logger.info(f"Copy file {fn}")
+            context.logger.debug(f"Copy file {fn}")
             shutil.copy(p, context.path / "build" / fn)
 
-    # Use our app.js
+
+@build_handler("Build app.js")
+def handle_appjs(context: ZMakeContext):
     if not (context.path / "app.js").is_file():
         shutil.copy(f"{utils.APP_PATH}/data/app.js", context.path / "build/app.js")
+        context.logger.info("Use our app.js template, because they don't exist in proj")
         return
 
-    # Use user-defined app.js
-    _js_process(context.path / "app.js",
-                context.path / "build",
-                context,
-                "")
+    if context.config["esbuild"]:
+        command = [format_batch("esbuild")]
+        params = context.config['esbuild_params']
+
+        if params != "":
+            command.extend(params.split(" "))
+
+        command.extend(["--platform=node",
+                        f"--outdir={context.path / 'build'}",
+                        "--format=iife",
+                        "--log-level=warning",
+                        context.path / "app.js"])
+
+        run_ext_tool(command, context)
+    else:
+        shutil.copy(context.path / "app.js",
+                    context.path / "build" / "app.js")
 
 
-@build_handler("Make pages/watchface")
-def handle_app(context: ZMakeContext):
-    with open(context.path / "app.json", "r", encoding="utf8") as f:
-        app_config = json.loads(f.read())
+@build_handler("Build page from src/lib")
+def handle_src(context: ZMakeContext):
+    if not (context.path / "src").is_dir():
+        return
 
-    target_dir = "watchface"
-    if app_config["app"]["appType"] == "app":
-        target_dir = "page"
+    out = ""
+    for directory in [context.path / 'lib', context.path / 'src']:
+        if not directory.is_dir():
+            continue
 
-    os.mkdir(context.path / "build" / target_dir)
-
-    if (context.path / target_dir).is_dir():
-        _js_process(context.path / target_dir,
-                    context.path / "build" / target_dir,
-                    context,
-                    target_dir)
-
-    if (context.path / "src").is_dir():
-        out = ""
-        for directory in [context.path / 'lib', context.path / 'src']:
-            if not directory.is_dir():
-                continue
-
-            for file in sorted(directory.rglob("**/*.js")):
-                out += f"// source: {file}\n"
-                with file.open("r", encoding="utf8") as f:
-                    out += f.read() + "\n"
-
-        entrypoint = context.path / 'entrypoint.js'
-        if entrypoint.is_file():
-            out += f"// source: {entrypoint}\n"
-            with entrypoint.open("r", encoding="utf8") as f:
+        for file in sorted(directory.rglob("**/*.js")):
+            out += f"// source: {file}\n"
+            with file.open("r", encoding="utf8") as f:
                 out += f.read() + "\n"
 
-        out = utils.get_app_asset("basement.js").replace("{content}", out)
-        fn = context.path / "build" / target_dir / "index.js"
-        with open(fn, "w", encoding="utf8") as f:
-            f.write(out)
+    entrypoint = context.path / 'entrypoint.js'
+    if entrypoint.is_file():
+        out += f"// source: {entrypoint}\n"
+        with entrypoint.open("r", encoding="utf8") as f:
+            out += f.read() + "\n"
 
-        _js_process(fn,
-                    context.path / "build" / target_dir,
-                    context,
-                    target_dir)
+    out = utils.get_app_asset("basement.js").replace("{content}", out)
+    fn = context.path / "build" / context.target_dir / "index.js"
+    with open(fn, "w", encoding="utf8") as f:
+        f.write(out)
+
+    context.logger.info(f"Created build/{context.target_dir}/index.js")
+
+
+@build_handler("Process exiting pages")
+def handle_app(context: ZMakeContext):
+    if not (context.path / context.target_dir).is_dir():
+        return
+
+    src_dir = context.path / context.target_dir
+    out_dir = context.path / 'build' / context.target_dir
+
+    if context.config["esbuild"]:
+        command = [format_batch("esbuild")]
+        params = context.config['esbuild_params']
+
+        if params != "":
+            command.extend(params.split(" "))
+
+        command.extend(["--platform=node",
+                        "--log-level=warning",
+                        f"--outdir={out_dir}",
+                        "--format=iife"])
+        command.extend(list(src_dir.rglob("**/*.js")))
+        run_ext_tool(command, context)
+    else:
+        for file in src_dir.rglob("**/*.js"):
+            relative_path = str(file)[len(str(src_dir)) + 1:]
+            dest_file = out_dir / relative_path
+            dest_file.parent.mkdir(parents=True, exist_ok=True)
+
+            shutil.copy(file, dest_file)
+
+
+@build_handler("Post-processing JS files")
+def handle_post_processing(context: ZMakeContext):
+    js_dir = context.path / "build" / context.target_dir
+    for file in js_dir.rglob("**/*.js"):
+        if context.config["with_uglifyjs"]:
+            command = [format_batch("uglifyjs")]
+            params = context.config['uglifyjs_params']
+            if params != "":
+                command.extend(params.split(" "))
+            command.extend(["-o", str(file), str(file)])
+            run_ext_tool(command, context)
+
+        # Inject comment
+        with open(file, "r", encoding="utf8") as f:
+            content = utils.get_app_asset("comment.js") + "\n" + f.read()
+        with open(file, "w", encoding="utf8") as f:
+            f.write(content)
 
 
 @build_handler("Preview")
@@ -205,11 +205,12 @@ def zepp_preview(context: ZMakeContext):
         context.logger.info("Skip, disabled")
         return
 
-    subprocess.Popen([format_batch("zepp-preview"),
-                      "-o", context.path / "dist",
-                      "--gif",
-                      context.path / "build"]).wait()
+    command = [format_batch("zepp-preview"),
+               "-o", context.path / "dist",
+               "--gif",
+               context.path / "build"]
 
+    run_ext_tool(command, context)
     assert (context.path / "dist/preview.png").is_file()
     assert (context.path / "dist/preview.gif").is_file()
 
@@ -255,7 +256,11 @@ def adb_install(context: ZMakeContext):
     dist_zip = context.path / "dist" / f"{basename}.zip"
 
     adb = format_executable("adb")
-    subprocess.Popen([adb, "shell", "mkdir", "-p", path]).wait()
-    subprocess.Popen([adb, "push", dist_zip, path]).wait()
-    subprocess.Popen([adb, "shell", f"cd {path} && unzip -o {basename}.zip"]).wait()
-    subprocess.Popen([adb, "shell", "rm", f"{path}/{basename}.zip"]).wait()
+
+    try:
+        run_ext_tool([adb, "shell", "mkdir", "-p", path], context)
+        run_ext_tool([adb, "push", dist_zip, path], context)
+        run_ext_tool([adb, "shell", f"cd {path} && unzip -o {basename}.zip"], context)
+        run_ext_tool([adb, "shell", "rm", f"{path}/{basename}.zip"], context)
+    except AssertionError:
+        context.logger.info("ADB install failed, ignore")

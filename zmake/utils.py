@@ -18,11 +18,11 @@ def get_app_asset(name: str):
 
 
 def image_color_compress(image: Image.Image, file: Path | None):
-    if not (APP_PATH / "backup").exists():
-        (APP_PATH / "backup").mkdir()
-
     # Save fallback
     if file is not None:
+        if not (APP_PATH / "backup").exists():
+            (APP_PATH / "backup").mkdir()
+
         print(f"WARN: Color compression applied: {file}")
         time_tag = str(datetime.today()).replace(' ', '_').replace(':', '')
         path = APP_PATH / "backup" / f"{time_tag}__{file.name}"
