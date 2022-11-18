@@ -17,7 +17,7 @@ class Ui_GuideWindow(object):
     def setupUi(self, GuideWindow):
         if not GuideWindow.objectName():
             GuideWindow.setObjectName(u"GuideWindow")
-        GuideWindow.resize(600, 400)
+        GuideWindow.resize(600, 214)
         sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)

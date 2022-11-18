@@ -5,11 +5,10 @@ import time
 from pathlib import Path
 
 from PySide2.QtCore import QThread, Signal
+from PySide2.QtWidgets import QApplication, QInputDialog
 
-import zmake
 from zmake import ZMakeContext
-from zmake_qt.qt_windows import ProgressWindow
-from PySide2.QtWidgets import QApplication, QMessageBox, QInputDialog
+from zmake_qt.qt_windows import ProgressWindow, GuideWindow
 
 logging.basicConfig(level=logging.INFO)
 
@@ -83,16 +82,14 @@ def main():
     app = QApplication(sys.argv)
 
     if len(sys.argv) < 2:
-        # noinspection PyTypeChecker
-        QMessageBox.information(None, "ZMake", zmake.GUIDE)
-        return
+        window = GuideWindow()
+        window.show()
+    else:
+        window = ProgressWindow()
+        window.show()
 
-    window = ProgressWindow()
-    window.setupUi(window)
-    window.show()
-
-    build_thread = ZMakeThread(window, sys.argv[1])
-    build_thread.start()
+        build_thread = ZMakeThread(window, sys.argv[1])
+        build_thread.start()
 
     app.exec_()
 

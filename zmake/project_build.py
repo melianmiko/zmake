@@ -229,6 +229,9 @@ def package(context: ZMakeContext):
     with ZipFile(dist_bin, "w", ZIP_DEFLATED) as arc:
         for file in (context.path / "build").rglob("**/*"):
             fn = str(file)[len(str(context.path / "build")):]
+            if ".DS_Store" in fn or "Thumbs.db" in fn:
+                context.logger.info(f"Skip: {fn}")
+                continue
             arc.write(file, fn)
 
     # ZIP
