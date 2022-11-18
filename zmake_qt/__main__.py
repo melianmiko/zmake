@@ -8,7 +8,7 @@ from PySide2.QtCore import QThread, Signal
 
 import zmake
 from zmake import ZMakeContext
-from zmake_qt.qt_window import Ui_MainWindow
+from zmake_qt.qt_windows import ProgressWindow
 from PySide2.QtWidgets import QApplication, QMessageBox, QInputDialog
 
 logging.basicConfig(level=logging.INFO)
@@ -24,12 +24,6 @@ class QtLogHandler(logging.StreamHandler):
         self.signal.emit(msg)
 
 
-class ZMakeQtContext(ZMakeContext):
-    def __init__(self, path, logHandler):
-        super().__init__(path)
-        self.logger.addHandler()
-
-
 # noinspection PyUnresolvedReferences
 class ZMakeThread(QThread):
     on_data = Signal(str)
@@ -37,17 +31,14 @@ class ZMakeThread(QThread):
     ev_dialog_closed = threading.Event()
     dialog_response = "none"
 
-    def __init__(self, parent_window: Ui_MainWindow, path: str):
+    def __init__(self, parent_window: ProgressWindow, path: str):
         super().__init__()
         self.parent_window = parent_window
         self.path = path
 
         self.log_handler = QtLogHandler(self.on_data)
-        self.on_data.connect(self.write_log)
+        self.on_data.connect(self.parent_window.write_log)
         self.on_dialog.connect(self.open_dialog)
-
-    def write_log(self, msg):
-        self.parent_window.log_view.append(msg)
 
     def open_dialog(self, data):
         msg, options = data
@@ -91,12 +82,12 @@ class ZMakeThread(QThread):
 def main():
     app = QApplication(sys.argv)
 
-    if len(sys.argv) < 1:
+    if len(sys.argv) < 2:
         # noinspection PyTypeChecker
         QMessageBox.information(None, "ZMake", zmake.GUIDE)
         return
 
-    window = Ui_MainWindow()
+    window = ProgressWindow()
     window.setupUi(window)
     window.show()
 
