@@ -16,8 +16,8 @@ if sys.platform == "win32":
     result_file = "zmake.exe"
 elif sys.platform == "darwin":
     pyinstaller = "./venv/bin/pyinstaller"
-    spec_file = "zmake-qt.spec"
-    result_file = "zmake.app"
+    spec_file = "zmake_darwin.spec"
+    result_file = "ZMake.app"
 else:
     pyinstaller = "./venv/bin/pyinstaller"
     spec_file = "zmake.spec"
