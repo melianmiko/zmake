@@ -20,7 +20,7 @@ elif sys.platform == "darwin":
     result_file = "zmake.app"
 else:
     pyinstaller = "./venv/bin/pyinstaller"
-    spec_file = "zmake.spec"
+    spec_file = "zmake_linux.spec"
     result_file = "zmake"
 
 # Build
