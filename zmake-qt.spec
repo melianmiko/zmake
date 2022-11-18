@@ -53,8 +53,8 @@ coll = COLLECT(
 )
 app = BUNDLE(
     coll,
-    name='zmake.app',
-    icon=None,
+    name='ZMake.app',
+    icon="assets/logo.png",
     bundle_identifier=None,
     info_plist={
         'CFBundleDocumentTypes': [
