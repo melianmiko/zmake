@@ -1,10 +1,11 @@
 __pycache__
+.DS_Store
+
 /dist
 /backups
 /build
 /test
 /venv
-/zmake.spec
 
 *~
 
