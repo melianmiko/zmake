@@ -1,7 +1,7 @@
 from zmake.context import ZMakeContext
 import zmake.project_build
 
-VERSION = "v1.6-dev"
+VERSION = "v1.6"
 
 GUIDE = f"""zmake {VERSION} by melianmiko
 https://melianmiko.ru/zmake

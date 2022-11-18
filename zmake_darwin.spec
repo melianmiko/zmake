@@ -38,7 +38,7 @@ exe = EXE(
     disable_windowed_traceback=False,
     argv_emulation=True,
     target_arch=None,
-    codesign_identity=None,
+    codesign_identity="MelianMiko",
     entitlements_file=None,
 )
 coll = COLLECT(
@@ -53,7 +53,7 @@ coll = COLLECT(
 )
 app = BUNDLE(
     coll,
-    name='ZMake.app',
+    name='zmake.app',
     icon="assets/logo.png",
     bundle_identifier=None,
     info_plist={

@@ -17,7 +17,7 @@ if sys.platform == "win32":
 elif sys.platform == "darwin":
     pyinstaller = "./venv/bin/pyinstaller"
     spec_file = "zmake_darwin.spec"
-    result_file = "ZMake.app"
+    result_file = "zmake.app"
 else:
     pyinstaller = "./venv/bin/pyinstaller"
     spec_file = "zmake.spec"
@@ -29,7 +29,7 @@ subprocess.Popen([pyinstaller, spec_file]).wait()
 # Package OSX
 if sys.platform == "darwin":
     shutil.make_archive(f"dist/ZMake_{VERSION}_macos",
-                        "zip",
+                        "gztar",
                         "dist",
                         "zmake.app")
     raise SystemExit
@@ -38,6 +38,5 @@ if sys.platform == "darwin":
 with ZipFile(f"dist/ZMake_{VERSION}_{sys.platform}.zip", "w", ZIP_DEFLATED) as f:
     f.write(f"dist/{result_file}", result_file)
 
-    f.write('GUIDE.txt', 'GUIDE.txt')
     for ff in Path("zmake/data").rglob("**/*"):
         f.write(ff, f"data/{ff.name}")
