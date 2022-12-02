@@ -1,12 +1,17 @@
 from PIL import Image
 
 
-def _parse_tga_header(header):
-    id_length = header[0]
+def _parse_tga_header(header, id_data):
     palette_length = int.from_bytes(header[5:7], "little")
     width = int.from_bytes(header[12:14], "little")
     height = int.from_bytes(header[14:16], "little")
-    return id_length, palette_length, width, height
+
+    if len(id_data) > 4 and id_data[0:4] == b"SOMH":
+        # Use width from ZeppOS ID string
+        # GTR/GTS/AB compatibility
+        width = int.from_bytes(id_data[4:6], "little")
+
+    return palette_length, width, height
 
 
 def _fetch_palette(f, palette_length):
@@ -31,8 +36,9 @@ def load_palette_tga(f):
     assert header[7] == 32
 
     # Skip ID
-    id_length, palette_length, width, height = _parse_tga_header(header)
-    f.read(id_length)
+    id_length = header[0]
+    id_data = f.read(id_length)
+    palette_length, width, height = _parse_tga_header(header, id_data)
 
     # Read RAW img data
     palette_raw = _fetch_palette(f, palette_length)
@@ -58,8 +64,9 @@ def load_rl_palette_tga(f):
     assert header[7] == 32
 
     # Skip ID
-    id_length, palette_length, width, height = _parse_tga_header(header)
-    f.read(id_length)
+    id_length = header[0]
+    id_data = f.read(id_length)
+    palette_length, width, height = _parse_tga_header(header, id_data)
 
     # Read RAW img data
     palette_raw = _fetch_palette(f, palette_length)

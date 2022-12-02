@@ -40,5 +40,8 @@ class ProgressWindow(QMainWindow, Ui_ProgressWindow):
         super().__init__()
         self.setupUi(self)
 
+    def remove_progress(self):
+        self.progressBar.hide()
+
     def write_log(self, msg):
         self.log_view.append(msg)

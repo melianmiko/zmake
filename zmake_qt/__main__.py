@@ -71,12 +71,14 @@ class ZMakeThread(QThread):
         # noinspection PyBroadException
         try:
             context.perform_auto()
-            time.sleep(0.5)
-            self.parent_window.close()
+            self.parent_window.remove_progress()
         except Exception:
             time.sleep(0.5)
             self.parent_window.log_view.append("Build failed")
+            return
 
+        time.sleep(0.5)
+        self.parent_window.close()
 
 def main():
     app = QApplication(sys.argv)
