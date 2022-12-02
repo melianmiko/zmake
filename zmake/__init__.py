@@ -1,10 +1,9 @@
 from zmake.context import ZMakeContext
 import zmake.project_build
 
-VERSION = "v1.6"
+VERSION = "v1.6.1"
 
 GUIDE = f"""zmake {VERSION} by melianmiko
-https://melianmiko.ru/zmake
 
 This application can build and unpack Smart Band 7 & Amazfit Band 7
 apps and watch faces. Give input file via drag to this application icon
@@ -15,4 +14,7 @@ If you push
 - empty directory, we'll init an empty template inside them
 - directory with `app.json`, we'll try to build it as project
 - other directory or file, we'll try to convert it to PNG or back to TGA
+
+https://melianmiko.ru/zmake
+https://github.com/melianmiko/zmake
 """
