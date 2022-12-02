@@ -78,7 +78,7 @@ def handle_assets(context: ZMakeContext):
                 continue
 
             if target_type in ["TGA-P", "TGA-RLP"] and not image.getcolors():
-                image = utils.image_color_compress(image, None)
+                image = utils.image_color_compress(image, None, context.logger)
 
             image_io.save_auto(image, dest / rel_name, target_type)
         except Exception as e:

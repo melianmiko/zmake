@@ -150,7 +150,7 @@ class ZMakeContext:
                     continue
 
                 if target_type in ["TGA-P", "TGA-RLP"] and not image.getcolors():
-                    image = utils.image_color_compress(image, file)
+                    image = utils.image_color_compress(image, file, self.logger)
 
                 image_io.save_auto(image, file, target_type)
             except Exception as e:

@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 from datetime import datetime
@@ -17,24 +18,26 @@ def get_app_asset(name: str):
     return data
 
 
-def image_color_compress(image: Image.Image, file: Path | None):
+def image_color_compress(image: Image.Image, file: Path | None, log: logging.Logger):
+    log.debug(f"Start color compression for {image.format} {image.mode}")
     # Save fallback
     if file is not None:
         if not (APP_PATH / "backup").exists():
             (APP_PATH / "backup").mkdir()
 
-        print(f"WARN: Color compression applied: {file}")
+        log.warning(f"[!] Color compression applied: {file}")
         time_tag = str(datetime.today()).replace(' ', '_').replace(':', '')
         path = APP_PATH / "backup" / f"{time_tag}__{file.name}"
-        print(f"Backup at {path}")
+        log.info(f"Backup at {path}")
         image.save(path)
 
     # Quantize
     is_rgb = True
-    for a in image.getdata():
-        if a[3] != 255:
-            is_rgb = False
-            break
+    if image.mode == "RGBA":
+        for a in image.getdata():
+            if a[3] != 255:
+                is_rgb = False
+                break
 
     if is_rgb:
         image = image.convert("RGB").quantize(256).convert("RGBA")

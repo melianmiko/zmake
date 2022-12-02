@@ -1,4 +1,5 @@
 import logging
+import os.path
 import sys
 import traceback
 from pathlib import Path
@@ -7,7 +8,10 @@ from zmake import ZMakeContext, GUIDE
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, format="%(message)s")
+    if os.path.isfile(".zmake_debug"):
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO, format="%(message)s")
 
     if len(sys.argv) < 2:
         print(GUIDE)
