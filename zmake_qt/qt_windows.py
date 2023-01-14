@@ -9,6 +9,7 @@ from zmake_qt._guide_window import Ui_GuideWindow
 from zmake_qt._progress_window import Ui_ProgressWindow
 
 
+# noinspection PyMethodMayBeStatic
 class GuideWindow(QMainWindow, Ui_GuideWindow):
     def __init__(self):
         super().__init__()
@@ -32,7 +33,7 @@ class GuideWindow(QMainWindow, Ui_GuideWindow):
         webbrowser.open("https://melianmiko.ru/donate")
 
     def go_website(self):
-        webbrowser.open("https://melianmiko.ru/zmake")
+        webbrowser.open("https://melianmiko.ru/en/zmake")
 
 
 class ProgressWindow(QMainWindow, Ui_ProgressWindow):
