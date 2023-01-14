@@ -11,6 +11,10 @@ from zmake import utils, image_io
 BUILD_HANDLERS = []
 
 
+class QuietExitException(Exception):
+    pass
+
+
 def build_handler(name):
     def _w(func):
         BUILD_HANDLERS.append([name, func])

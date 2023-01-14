@@ -7,7 +7,13 @@ from zipfile import ZipFile, ZIP_DEFLATED
 from PIL import Image
 
 from zmake import utils, image_io
-from zmake.context import build_handler, ZMakeContext
+from zmake.context import build_handler, ZMakeContext, QuietExitException
+
+NO_TOOL_MSG = """        
+Please install them, or disable usage of that tool in config,
+if it don't required to build your application.
+
+For more information, check https://melianmiko.ru/en/zmake/guide/."""
 
 LIST_COMMON_FILES = [
     "app.json",
@@ -24,19 +30,24 @@ def format_executable(n):
     return n
 
 
-def format_batch(n):
+def format_npm_command(n):
     if sys.platform == "win32":
         return f"{n}.cmd"
     return n
 
 
-def run_ext_tool(command, context: ZMakeContext):
-    p = subprocess.run(command, capture_output=True, text=True)
-    if p.stdout != "":
-        context.logger.info(p.stdout)
-    if p.stderr != "":
-        context.logger.error(p.stderr)
-    assert p.returncode == 0
+def run_ext_tool(command, context: ZMakeContext, tool_name: str):
+    try:
+        p = subprocess.run(command, capture_output=True, text=True)
+        if p.stdout != "":
+            context.logger.info(p.stdout)
+        if p.stderr != "":
+            context.logger.error(p.stderr)
+        assert p.returncode == 0
+    except FileNotFoundError:
+        err = f"ERROR: External tool {tool_name} not found\m{NO_TOOL_MSG}"
+        context.logger.error(err)
+        raise QuietExitException()
 
 
 @build_handler("Prepare")
@@ -103,7 +114,7 @@ def handle_appjs(context: ZMakeContext):
         return
 
     if context.config["esbuild"]:
-        command = [format_batch("esbuild")]
+        command = [format_npm_command("esbuild")]
         params = context.config['esbuild_params']
 
         if params != "":
@@ -115,7 +126,7 @@ def handle_appjs(context: ZMakeContext):
                         "--log-level=warning",
                         context.path / "app.js"])
 
-        run_ext_tool(command, context)
+        run_ext_tool(command, context, "ESBuild")
     else:
         shutil.copy(context.path / "app.js",
                     context.path / "build" / "app.js")
@@ -159,7 +170,7 @@ def handle_app(context: ZMakeContext):
     out_dir = context.path / 'build' / context.target_dir
 
     if context.config["esbuild"]:
-        command = [format_batch("esbuild")]
+        command = [format_npm_command("esbuild1")]
         params = context.config['esbuild_params']
 
         if params != "":
@@ -170,7 +181,7 @@ def handle_app(context: ZMakeContext):
                         f"--outdir={out_dir}",
                         "--format=iife"])
         command.extend(list(src_dir.rglob("**/*.js")))
-        run_ext_tool(command, context)
+        run_ext_tool(command, context, "ESBuild")
     else:
         for file in src_dir.rglob("**/*.js"):
             relative_path = str(file)[len(str(src_dir)) + 1:]
@@ -185,12 +196,12 @@ def handle_post_processing(context: ZMakeContext):
     js_dir = context.path / "build" / context.target_dir
     for file in js_dir.rglob("**/*.js"):
         if context.config["with_uglifyjs"]:
-            command = [format_batch("uglifyjs")]
+            command = [format_npm_command("uglifyjs")]
             params = context.config['uglifyjs_params']
             if params != "":
                 command.extend(params.split(" "))
             command.extend(["-o", str(file), str(file)])
-            run_ext_tool(command, context)
+            run_ext_tool(command, context, "UglifyJS")
 
         # Inject comment
         with open(file, "r", encoding="utf8") as f:
@@ -205,12 +216,12 @@ def zepp_preview(context: ZMakeContext):
         context.logger.info("Skip, disabled")
         return
 
-    command = [format_batch("zepp-preview"),
+    command = [format_npm_command("zepp-preview"),
                "-o", context.path / "dist",
                "--gif",
                context.path / "build"]
 
-    run_ext_tool(command, context)
+    run_ext_tool(command, context, "ZeppPreview")
     assert (context.path / "dist/preview.png").is_file()
     assert (context.path / "dist/preview.gif").is_file()
 
@@ -261,9 +272,9 @@ def adb_install(context: ZMakeContext):
     adb = format_executable("adb")
 
     try:
-        run_ext_tool([adb, "shell", "mkdir", "-p", path], context)
-        run_ext_tool([adb, "push", dist_zip, path], context)
-        run_ext_tool([adb, "shell", f"cd {path} && unzip -o {basename}.zip"], context)
-        run_ext_tool([adb, "shell", "rm", f"{path}/{basename}.zip"], context)
+        run_ext_tool([adb, "shell", "mkdir", "-p", path], context, "ADB")
+        run_ext_tool([adb, "push", dist_zip, path], context, "ADB")
+        run_ext_tool([adb, "shell", f"cd {path} && unzip -o {basename}.zip"], context, "ADB")
+        run_ext_tool([adb, "shell", "rm", f"{path}/{basename}.zip"], context, "ADB")
     except AssertionError:
         context.logger.info("ADB install failed, ignore")
