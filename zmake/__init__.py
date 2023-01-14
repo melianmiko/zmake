@@ -1,7 +1,7 @@
 from zmake.context import ZMakeContext
 import zmake.project_build
 
-VERSION = "v1.6.1"
+VERSION = "v1.6.2"
 
 GUIDE = f"""zmake {VERSION} by melianmiko
 
@@ -15,6 +15,6 @@ If you push
 - directory with `app.json`, we'll try to build it as project
 - other directory or file, we'll try to convert it to PNG or back to TGA
 
-https://melianmiko.ru/zmake
+https://melianmiko.ru/en/zmake
 https://github.com/melianmiko/zmake
 """
