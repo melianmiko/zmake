@@ -45,7 +45,7 @@ def run_ext_tool(command, context: ZMakeContext, tool_name: str):
             context.logger.error(p.stderr)
         assert p.returncode == 0
     except FileNotFoundError:
-        err = f"ERROR: External tool {tool_name} not found\m{NO_TOOL_MSG}"
+        err = f"ERROR: External tool {tool_name} not found\n{NO_TOOL_MSG}"
         context.logger.error(err)
         raise QuietExitException()
 
@@ -170,7 +170,7 @@ def handle_app(context: ZMakeContext):
     out_dir = context.path / 'build' / context.target_dir
 
     if context.config["esbuild"]:
-        command = [format_npm_command("esbuild1")]
+        command = [format_npm_command("esbuild")]
         params = context.config['esbuild_params']
 
         if params != "":
