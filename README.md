@@ -93,7 +93,6 @@ python3 make_release.py
 Result will appear in `dist` directory.
 
 ### macOS
-Some extra steps are required, because app will be build with
 Qt Gui:
 
 ```bash
@@ -101,7 +100,6 @@ git clone https://github.com/melianmiko/zmake.git
 cd zmake
 python3 -m venv venv
 pip3 install -r requirements.txt
-pip3 install PySide2
 python3 make_release.py
 ```
 
