@@ -2,7 +2,7 @@ __pycache__
 .DS_Store
 
 /dist
-/backups
+/zmake/backup
 /build
 /test
 /venv
