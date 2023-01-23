@@ -93,14 +93,21 @@ python3 make_release.py
 Result will appear in `dist` directory.
 
 ### macOS
-Qt Gui:
+Requires Python 3.10 from homebrew, with newer version won't work,
+due to PySide2.
 
 ```bash
+# Grab sources
 git clone https://github.com/melianmiko/zmake.git
 cd zmake
-python3 -m venv venv
-pip3 install -r requirements.txt
-python3 make_release.py
+
+# Create and activate venv
+python3.10 -m venv venv
+source venv/bin/active
+
+# Install deps and build
+pip install -r requirements.txt
+python make_release.py
 ```
 
 Result will appear in `dist` directory.
