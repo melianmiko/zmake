@@ -1,7 +1,7 @@
 {
   "def_format": "TGA-P",
   "with_uglifyjs": false,
-  "swap_red_and_blue": true,
+  "swap_red_and_blue": false,
   "esbuild": false,
   "mk_preview": false,
   "add_preview_asset": false,
