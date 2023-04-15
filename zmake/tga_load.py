@@ -1,16 +1,28 @@
 from PIL import Image
+import logging
+
+log = logging.getLogger("TgaLoad")
 
 
-def _parse_tga_header(header, id_data):
+def _apply_zepp_header(image: Image.Image, id_data: bytes):
+    if len(id_data) < 46 or id_data[0:4] != b"SOMH":
+        return
+
+    # Use width from ZeppOS ID string
+    # GTR/GTS/AB compatibility
+    zepp_width = int.from_bytes(id_data[4:6], "little")
+    if zepp_width != image.width:
+        log.debug(f"use width from tga header, zepp_width={zepp_width}")
+        image = image.crop((0, 0, zepp_width, image.height))
+    return image
+
+
+def _parse_tga_header(header):
     palette_length = int.from_bytes(header[5:7], "little")
     width = int.from_bytes(header[12:14], "little")
     height = int.from_bytes(header[14:16], "little")
 
-    if len(id_data) > 4 and id_data[0:4] == b"SOMH":
-        # Use width from ZeppOS ID string
-        # GTR/GTS/AB compatibility
-        width = int.from_bytes(id_data[4:6], "little")
-
+    log.info(f"palette_length={palette_length}, size={width}x{height}")
     return palette_length, width, height
 
 
@@ -38,15 +50,20 @@ def load_palette_tga(f):
     # Skip ID
     id_length = header[0]
     id_data = f.read(id_length)
-    palette_length, width, height = _parse_tga_header(header, id_data)
+    palette_length, width, height = _parse_tga_header(header)
 
     # Read RAW img data
     palette_raw = _fetch_palette(f, palette_length)
     img_data = f.read(width*height)
+    if len(f.peek()) > 0:
+        log.info("WARNING: NOT ALL DATA PARSED, looks like it's a bug")
+        log.debug(f"peek_size={len(f.peek())}")
 
     image = Image.new("P", (width, height))
     image.putpalette(palette_raw, "RGBA")
     image.putdata(img_data)
+
+    image = _apply_zepp_header(image, id_data)
 
     return image.convert("RGBA")
 

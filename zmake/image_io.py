@@ -1,8 +1,12 @@
+import logging
+import sys
 from pathlib import Path
 
 from PIL import Image
 
 from zmake import tga_save, tga_load
+
+log = logging.getLogger("ImageIo")
 
 PNG_SIGNATURE = b"\211PNG"
 
@@ -31,10 +35,13 @@ def load_auto(path: Path):
         if header == PNG_SIGNATURE:
             return Image.open(path), "PNG"
         elif header[1] == 0 and header[2] == 2:
+            log.info("Load as truecolor TGA")
             return tga_load.load_truecolor_tga(f)
         elif header[1] == 1 and header[2] == 1:
+            log.info("Load as palette TGA")
             return tga_load.load_palette_tga(f), "TGA-P"
         elif header[1] == 1 and header[2] == 9:
+            log.info("Load as palette RLP TGA")
             return tga_load.load_rl_palette_tga(f), "TGA-RLP"
         else:
             return None, "N/A"
@@ -58,3 +65,16 @@ def save_auto(img: Image.Image, out: Path, dest_type: str):
         return True
     else:
         return False
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG)
+
+    img_path = Path(sys.argv[1]).resolve()
+    img_fmt = get_format(img_path)
+    if img_fmt == "PNG":
+        log.info("PNG -> TGA-P result.png")
+        save_auto(Image.open(img_path), Path("result.png"), "TGA-P")
+    else:
+        log.info("ANY -> PNG result.png")
+        load_auto(img_path)[0].save("result.png")
