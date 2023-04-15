@@ -3,7 +3,7 @@ from pathlib import Path
 from PIL import Image
 
 
-def save_truecolor_tga(img: Image.Image, path: Path, depth):
+def save_truecolor_tga(img: Image.Image, path: Path, depth, swap_red_and_blue=False):
     img = img.convert("RGBA")
     data = bytearray()
 
@@ -27,11 +27,18 @@ def save_truecolor_tga(img: Image.Image, path: Path, depth):
             r = round(31/255 * pixel[0])
             g = round(63/255 * pixel[1])
             b = round(31/255 * pixel[2])
+
+            if swap_red_and_blue:
+                r, b = b, r
+
             data.append(((g & 0b111) << 5) + b)
             data.append((r << 3) + (g >> 3))
     elif depth == 32:
         for r, g, b, a in img.getdata():
-            data.extend([b, g, r, a])
+            if swap_red_and_blue:
+                data.extend([r, g, b, a])
+            else:
+                data.extend([b, g, r, a])
     else:
         raise ValueError("Not supported")
 
@@ -39,9 +46,10 @@ def save_truecolor_tga(img: Image.Image, path: Path, depth):
         f.write(data)
 
 
-def _prep_palette_base(img: Image.Image):
+def _prep_palette_base(img, swap_red_and_blue):
     """
     Prepare data with palette header and data.
+
     :param img: Source image
     :return: bytes and palette
     """
@@ -76,21 +84,26 @@ def _prep_palette_base(img: Image.Image):
 
     # Palette
     for r, g, b, a in palette:
-        data.extend([b, g, r, a])
+        if swap_red_and_blue:
+            value = r, g, b, a
+        else:
+            value = b, g, r, a
+        data.extend(value)
 
     return data, palette
 
 
-def save_rl_palette_tga(img: Image.Image, path: Path):
+def save_rl_palette_tga(img: Image.Image, path: Path, swap_red_and_blue=False):
     """
     Write PIL image to TGA file with DATA TYPE 9
 
+    :param swap_red_and_blue:
     :param img: source img
     :param path: dest path
     :return:
     """
     img = img.convert("RGBA")
-    data, palette = _prep_palette_base(img)
+    data, palette = _prep_palette_base(img, swap_red_and_blue)
     data[2] = 9
 
     # Image data
@@ -133,16 +146,17 @@ def save_rl_palette_tga(img: Image.Image, path: Path):
         f.write(data)
 
 
-def save_palette_tga(img: Image.Image, path: Path):
+def save_palette_tga(img: Image.Image, path: Path, swap_red_and_blue=False):
     """
     Write PIL image to TGA file with DATA TYPE 1
 
+    :param swap_red_and_blue: Swap red and blue channels
     :param img: source img
     :param path: dest path
     :return:
     """
     img = img.convert("RGBA")
-    data, palette = _prep_palette_base(img)
+    data, palette = _prep_palette_base(img, swap_red_and_blue)
 
     # Image data
     for pixel in img.getdata():

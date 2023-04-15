@@ -43,6 +43,8 @@ class ZMakeContext:
         if (path / "zmake.json").is_file():
             self.merge_app_config()
 
+        self.apply_config()
+
     def ask_question(self, message, options):
         self.logger.info(message)
         result = ""
@@ -186,6 +188,9 @@ class ZMakeContext:
 
         for i in overlay:
             self.config[i] = overlay[i]
+
+    def apply_config(self):
+        image_io.swap_red_and_blue = self.config["swap_red_and_blue"]
 
     def process_project(self):
         with open(self.path / "app.json", "r", encoding="utf8") as f:

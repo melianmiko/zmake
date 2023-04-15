@@ -9,6 +9,7 @@ from zmake import tga_save, tga_load
 log = logging.getLogger("ImageIo")
 
 PNG_SIGNATURE = b"\211PNG"
+swap_red_and_blue = False
 
 
 def get_format(path: Path):
@@ -36,13 +37,13 @@ def load_auto(path: Path):
             return Image.open(path), "PNG"
         elif header[1] == 0 and header[2] == 2:
             log.info("Load as truecolor TGA")
-            return tga_load.load_truecolor_tga(f)
+            return tga_load.load_truecolor_tga(f, swap_red_and_blue)
         elif header[1] == 1 and header[2] == 1:
             log.info("Load as palette TGA")
-            return tga_load.load_palette_tga(f), "TGA-P"
+            return tga_load.load_palette_tga(f, swap_red_and_blue), "TGA-P"
         elif header[1] == 1 and header[2] == 9:
             log.info("Load as palette RLP TGA")
-            return tga_load.load_rl_palette_tga(f), "TGA-RLP"
+            return tga_load.load_rl_palette_tga(f, swap_red_and_blue), "TGA-RLP"
         else:
             return None, "N/A"
 
@@ -52,16 +53,16 @@ def save_auto(img: Image.Image, out: Path, dest_type: str):
         img.save(out)
         return True
     elif dest_type == "TGA-P":
-        tga_save.save_palette_tga(img, out)
+        tga_save.save_palette_tga(img, out, swap_red_and_blue)
         return True
     elif dest_type == "TGA-16":
-        tga_save.save_truecolor_tga(img, out, 16)
+        tga_save.save_truecolor_tga(img, out, 16, swap_red_and_blue)
         return True
     elif dest_type == "TGA-32":
-        tga_save.save_truecolor_tga(img, out, 32)
+        tga_save.save_truecolor_tga(img, out, 32, swap_red_and_blue)
         return True
     elif dest_type == "TGA-RLP":
-        tga_save.save_rl_palette_tga(img, out)
+        tga_save.save_rl_palette_tga(img, out, swap_red_and_blue)
         return True
     else:
         return False
