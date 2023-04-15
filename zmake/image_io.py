@@ -36,13 +36,13 @@ def load_auto(path: Path):
         if header == PNG_SIGNATURE:
             return Image.open(path), "PNG"
         elif header[1] == 0 and header[2] == 2:
-            log.info("Load as truecolor TGA")
+            log.debug("Load as truecolor TGA")
             return tga_load.load_truecolor_tga(f, swap_red_and_blue)
         elif header[1] == 1 and header[2] == 1:
-            log.info("Load as palette TGA")
+            log.debug("Load as palette TGA")
             return tga_load.load_palette_tga(f, swap_red_and_blue), "TGA-P"
         elif header[1] == 1 and header[2] == 9:
-            log.info("Load as palette RLP TGA")
+            log.debug("Load as palette RLP TGA")
             return tga_load.load_rl_palette_tga(f, swap_red_and_blue), "TGA-RLP"
         else:
             return None, "N/A"
@@ -74,8 +74,8 @@ if __name__ == "__main__":
     img_path = Path(sys.argv[1]).resolve()
     img_fmt = get_format(img_path)
     if img_fmt == "PNG":
-        log.info("PNG -> TGA-P result.png")
+        log.debug("PNG -> TGA-P result.png")
         save_auto(Image.open(img_path), Path("result.png"), "TGA-P")
     else:
-        log.info("ANY -> PNG result.png")
+        log.debug("ANY -> PNG result.png")
         load_auto(img_path)[0].save("result.png")

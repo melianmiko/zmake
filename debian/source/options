@@ -1,0 +1,8 @@
+tar-ignore = "venv"
+tar-ignore = "build"
+tar-ignore = "dist"
+tar-ignore = "docs/logo.xcf"
+tar-ignore = ".git"
+tar-ignore = ".github"
+tar-ignore = ".idea"
+tar-ignore = "**/__pycache__"

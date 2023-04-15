@@ -1,11 +1,11 @@
 __pycache__
 .DS_Store
+backup
 
 /dist
 /build
 /test
 /venv
-*.png
 
 *~
 

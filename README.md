@@ -1,5 +1,5 @@
 
-![Icon](assets/logo_docs.png) ZMake 
+![Icon](docs/logo_docs.png) ZMake 
 --------------------------------
 
 *(aka. ZeppOS Make)*

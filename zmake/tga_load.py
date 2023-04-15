@@ -22,7 +22,7 @@ def _parse_tga_header(header):
     width = int.from_bytes(header[12:14], "little")
     height = int.from_bytes(header[14:16], "little")
 
-    log.info(f"palette_length={palette_length}, size={width}x{height}")
+    log.debug(f"palette_length={palette_length}, size={width}x{height}")
     return palette_length, width, height
 
 
