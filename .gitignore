@@ -2,11 +2,10 @@ __pycache__
 .DS_Store
 
 /dist
-/zmake/backup
 /build
 /test
 /venv
-/*.png
+*.png
 
 *~
 
