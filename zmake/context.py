@@ -80,6 +80,8 @@ class ZMakeContext:
 
         shutil.copy(utils.APP_PATH / "data" / f"template_index_{inp}.js",
                     self.path / source_dirname / "index.js")
+        shutil.copy(utils.APP_PATH / "data" / "app.js",
+                    self.path / "app.js")
 
     def process_bin(self):
         dest = Path(str(self.path)[:-4])
