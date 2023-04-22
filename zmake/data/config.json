@@ -4,6 +4,17 @@
   "swap_red_and_blue": false,
   "esbuild": false,
   "mk_preview": false,
+  "mk_zeus_pkg": false,
+  "zeus_platforms": [
+        {
+            "name": "amazfit-band7",
+            "deviceSource": 253
+        },
+        {
+            "name": "amazfit-band7-w",
+            "deviceSource": 254
+        }
+    ],
   "add_preview_asset": false,
   "adb_install": false,
   "uglifyjs_params": "",

@@ -1,7 +1,10 @@
+import io
+import json
 import os
 import shutil
 import subprocess
 import sys
+import time
 from zipfile import ZipFile, ZIP_DEFLATED
 
 from PIL import Image
@@ -256,6 +259,47 @@ def package(context: ZMakeContext):
         arc.write(dist_infos, f"{basename}/infos.xml")
         if (context.path / "dist/preview.png").is_file():
             arc.write(context.path / "dist/preview.png", f"{basename}/{basename}.png")
+
+
+@build_handler("Make ZEUS package")
+def make_zeus_pkg(context: ZMakeContext):
+    if not context.config["mk_zeus_pkg"]:
+        context.logger.info("Skip, disabled")
+        return
+
+    basename = context.path.name
+    package_info = {
+        "mode": "preview",
+        "timeStamp": round(time.time()),
+        "expiredTime": 157680000,
+        "zpm": "2.6.6"
+    }
+
+    # App JSON
+    with open(context.path / "app.json", "r") as f:
+        app_json = json.load(f)
+        app_json["packageInfo"] = package_info
+        app_json["platforms"] = context.config["zeus_platforms"]
+
+    # Device package
+    device_zip_file = io.BytesIO()
+    with ZipFile(device_zip_file, "w", ZIP_DEFLATED) as archive:
+        for file in (context.path / "build").rglob("**/*"):
+            fn = str(file)[len(str(context.path / "build")):]
+            if ".DS_Store" in fn or "Thumbs.db" in fn or "app.json" in fn:
+                continue
+            archive.write(file, fn)
+        archive.writestr("app.json", json.dumps(app_json))
+
+    # App-side package
+    app_side_zip_file = io.BytesIO()
+    with ZipFile(app_side_zip_file, "w", ZIP_DEFLATED) as archive:
+        archive.writestr("app.json", json.dumps(app_json))
+
+    # Output
+    with ZipFile(context.path / "dist" / f"{basename}.zpk", "w", ZIP_DEFLATED) as arc:
+        arc.writestr("device.zip", device_zip_file.getvalue())
+        arc.writestr("app-side.zip", app_side_zip_file.getvalue())
 
 
 @build_handler("ADB Install")
