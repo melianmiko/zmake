@@ -9,7 +9,7 @@ from zipfile import ZipFile, ZIP_DEFLATED
 
 from PIL import Image
 
-from zmake import utils, image_io
+from zmake import utils, image_io, constants
 from zmake.context import build_handler, ZMakeContext, QuietExitException
 
 NO_TOOL_MSG = """        
@@ -19,7 +19,6 @@ if it don't required to build your application.
 For more information, check https://melianmiko.ru/en/zmake/guide/."""
 
 LIST_COMMON_FILES = [
-    "app.json",
     "README.txt",
     "LICENSE.txt",
     "README",
@@ -70,9 +69,41 @@ def prepare(context: ZMakeContext):
     (path_build / context.target_dir).mkdir()
 
 
+@build_handler("Process app.json")
+def process_app_json(context: ZMakeContext):
+    package_info = {
+        "mode": "preview",
+        "timeStamp": round(time.time()),
+        "expiredTime": 157680000,
+        "zpm": "2.6.6",
+        "zmake": constants.VERSION
+    }
+
+    context.app_json["packageInfo"] = package_info
+    context.app_json["platforms"] = context.config["zeus_platforms"]
+
+    if "targets" in context.app_json:
+        context.logger.info("Found `targets` section in app.json")
+        target_id = context.config["zeus_target"]
+        if target_id not in context.app_json:
+            target_id = list(context.app_json["targets"].keys())[0]
+        context.logger.info(f"Use \"{target_id}\" target")
+
+        context.path_assets = context.path / "assets" / target_id
+
+        for key in context.app_json["targets"][target_id]:
+            context.app_json[key] = context.app_json["targets"][target_id][key]
+
+        del context.app_json["targets"]
+
+    app_json_string = json.dumps(context.app_json, indent=4, sort_keys=True)
+    with open(context.path / "build" / "app.json", "w") as f:
+        f.write(app_json_string)
+
+
 @build_handler("Convert assets")
 def handle_assets(context: ZMakeContext):
-    source = context.path / "assets"
+    source = context.path_assets
     dest = context.path / "build" / "assets"
     dest.mkdir()
 
@@ -122,6 +153,10 @@ def handle_appjs(context: ZMakeContext):
 
         if params != "":
             command.extend(params.split(" "))
+
+        if context.config["with_zeus_overrides"]:
+            context.logger.info("Add zeus_fixes_inject")
+            command.append(f"--inject:{utils.APP_PATH / 'data' / 'zeus_fixes_inject.js'}")
 
         command.extend(["--platform=node",
                         f"--outdir={context.path / 'build'}",
@@ -178,6 +213,10 @@ def handle_app(context: ZMakeContext):
 
         if params != "":
             command.extend(params.split(" "))
+
+        if context.config["with_zeus_overrides"]:
+            context.logger.info("Add zeus_fixes_inject")
+            command.append(f"--inject:{utils.APP_PATH / 'data' / 'zeus_fixes_inject.js'}")
 
         command.extend(["--platform=node",
                         "--log-level=warning",
@@ -266,35 +305,21 @@ def make_zeus_pkg(context: ZMakeContext):
     if not context.config["mk_zeus_pkg"]:
         context.logger.info("Skip, disabled")
         return
-
     basename = context.path.name
-    package_info = {
-        "mode": "preview",
-        "timeStamp": round(time.time()),
-        "expiredTime": 157680000,
-        "zpm": "2.6.6"
-    }
-
-    # App JSON
-    with open(context.path / "app.json", "r") as f:
-        app_json = json.load(f)
-        app_json["packageInfo"] = package_info
-        app_json["platforms"] = context.config["zeus_platforms"]
 
     # Device package
     device_zip_file = io.BytesIO()
     with ZipFile(device_zip_file, "w", ZIP_DEFLATED) as archive:
         for file in (context.path / "build").rglob("**/*"):
             fn = str(file)[len(str(context.path / "build")):]
-            if ".DS_Store" in fn or "Thumbs.db" in fn or "app.json" in fn:
+            if ".DS_Store" in fn or "Thumbs.db" in fn:
                 continue
             archive.write(file, fn)
-        archive.writestr("app.json", json.dumps(app_json))
 
     # App-side package
     app_side_zip_file = io.BytesIO()
     with ZipFile(app_side_zip_file, "w", ZIP_DEFLATED) as archive:
-        archive.writestr("app.json", json.dumps(app_json))
+        archive.write(context.path / "build" / "app.json", "app.json")
 
     # Output
     with ZipFile(context.path / "dist" / f"{basename}.zpk", "w", ZIP_DEFLATED) as arc:

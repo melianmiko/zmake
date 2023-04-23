@@ -1,10 +1,13 @@
 {
   "def_format": "TGA-P",
   "with_uglifyjs": false,
+  "with_zeus_overrides": false,
   "swap_red_and_blue": false,
   "esbuild": false,
   "mk_preview": false,
-  "mk_zeus_pkg": false,
+  "mk_zeus_pkg": true,
+  "target_dir_override": "",
+  "zeus_target": "mi-band7",
   "zeus_platforms": [
         {
             "name": "amazfit-band7",

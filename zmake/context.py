@@ -35,7 +35,9 @@ Tell what do you want:
 class ZMakeContext:
     def __init__(self, path: Path):
         self.target_dir = ""
+        self.zeus_platform_target = ""
         self.path = path
+        self.path_assets = path / "assets"
         self.config = json.loads(utils.get_app_asset("config.json"))
         self.app_json = {}
         self.logger = logging.getLogger("zmake")
@@ -199,6 +201,8 @@ class ZMakeContext:
         self.target_dir = "watchface"
         if self.app_json["app"]["appType"] == "app":
             self.target_dir = "page"
+        if self.config["target_dir_override"] != "":
+            self.target_dir = self.config["target_dir_override"]
 
         for name, func in BUILD_HANDLERS:
             self.logger.info(f"-- Stage: {name}")
