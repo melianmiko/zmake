@@ -8,7 +8,7 @@ from PySide6.QtCore import QThread, Signal
 from PySide6.QtWidgets import QApplication, QInputDialog
 
 from zmake import ZMakeContext
-from zmake_qt.qt_windows import ProgressWindow, GuideWindow
+from zmake_qt.main import ProgressWindow, GuideWindow
 
 logging.basicConfig(level=logging.INFO)
 
@@ -27,6 +27,7 @@ class QtLogHandler(logging.StreamHandler):
 class ZMakeThread(QThread):
     on_data = Signal(str)
     on_dialog = Signal(list)
+    on_finish = Signal(bool)
     ev_dialog_closed = threading.Event()
     dialog_response = "none"
 
@@ -36,6 +37,7 @@ class ZMakeThread(QThread):
         self.path = path
 
         self.log_handler = QtLogHandler(self.on_data)
+        self.on_finish.connect(self.parent_window.close)
         self.on_data.connect(self.parent_window.write_log)
         self.on_dialog.connect(self.open_dialog)
 
@@ -78,7 +80,8 @@ class ZMakeThread(QThread):
             return
 
         time.sleep(0.5)
-        self.parent_window.close()
+        self.on_finish.emit(True)
+
 
 def main():
     app = QApplication(sys.argv)
@@ -93,7 +96,7 @@ def main():
         build_thread = ZMakeThread(window, sys.argv[1])
         build_thread.start()
 
-    app.exec_()
+    app.exec()
 
 
 main()
