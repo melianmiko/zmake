@@ -100,7 +100,7 @@ def main():
         build_thread = ZMakeThread(window, sys.argv[1])
         build_thread.start()
 
-    app.exec()
+    app.exec_()
 
 
 main()
