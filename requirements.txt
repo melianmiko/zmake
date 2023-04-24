@@ -1,4 +1,4 @@
 Pillow==9.4.0
-PySide6==6.5.0
+PySide6-Essentials==6.5.0
 pyinstaller==5.7
 pyinstaller-hooks-contrib==2022.8

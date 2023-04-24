@@ -3,15 +3,14 @@
 ################################################################################
 ## Form generated from reading UI file '_guide_window.ui'
 ##
-## Created by: Qt User Interface Compiler version 5.15.2
+## Created by: Qt User Interface Compiler version 6.5.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide6.QtCore import *
-from PySide6.QtGui import *
-from PySide6.QtWidgets import *
-
+from PySide6.QtCore import (QCoreApplication, QMetaObject, Qt)
+from PySide6.QtWidgets import (QHBoxLayout, QLabel, QPushButton, QSizePolicy, QSpacerItem, QVBoxLayout,
+                               QWidget)
 
 class Ui_GuideWindow(object):
     def setupUi(self, GuideWindow):

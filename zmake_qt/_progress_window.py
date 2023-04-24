@@ -3,15 +3,14 @@
 ################################################################################
 ## Form generated from reading UI file '_progress_window.ui'
 ##
-## Created by: Qt User Interface Compiler version 5.15.2
+## Created by: Qt User Interface Compiler version 6.5.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide6.QtCore import *
-from PySide6.QtGui import *
-from PySide6.QtWidgets import *
-
+from PySide6.QtCore import (QCoreApplication, QMetaObject, QSize)
+from PySide6.QtWidgets import (QProgressBar, QSizePolicy,
+                               QTextBrowser, QVBoxLayout, QWidget)
 
 class Ui_ProgressWindow(object):
     def setupUi(self, ProgressWindow):
