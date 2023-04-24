@@ -2,21 +2,14 @@ import io
 import json
 import os
 import shutil
-import subprocess
-import sys
 import time
 from zipfile import ZipFile, ZIP_DEFLATED
 
 from PIL import Image
 
 from zmake import utils, image_io, constants
-from zmake.context import build_handler, ZMakeContext, QuietExitException
-
-NO_TOOL_MSG = """        
-Please install them, or disable usage of that tool in config,
-if it don't required to build your application.
-
-For more information, check https://melianmiko.ru/en/zmake/guide/."""
+from zmake.context import build_handler, ZMakeContext
+from zmake.third_tools_manager import run_ext_tool
 
 LIST_COMMON_FILES = [
     "README.txt",
@@ -24,32 +17,6 @@ LIST_COMMON_FILES = [
     "README",
     "LICENSE"
 ]
-
-
-def format_executable(n):
-    if sys.platform == "win32":
-        return f"{n}.exe"
-    return n
-
-
-def format_npm_command(n):
-    if sys.platform == "win32":
-        return f"{n}.cmd"
-    return n
-
-
-def run_ext_tool(command, context: ZMakeContext, tool_name: str):
-    try:
-        p = subprocess.run(command, capture_output=True, text=True)
-        if p.stdout != "":
-            context.logger.info(p.stdout)
-        if p.stderr != "":
-            context.logger.error(p.stderr)
-        assert p.returncode == 0
-    except FileNotFoundError:
-        err = f"ERROR: External tool {tool_name} not found\n{NO_TOOL_MSG}"
-        context.logger.error(err)
-        raise QuietExitException()
 
 
 @build_handler("Prepare")
@@ -148,7 +115,7 @@ def handle_appjs(context: ZMakeContext):
         return
 
     if context.config["esbuild"]:
-        command = [format_npm_command("esbuild")]
+        command = ["esbuild"]
         params = context.config['esbuild_params']
 
         if params != "":
@@ -208,7 +175,7 @@ def handle_app(context: ZMakeContext):
     out_dir = context.path / 'build' / context.target_dir
 
     if context.config["esbuild"]:
-        command = [format_npm_command("esbuild")]
+        command = ["esbuild"]
         params = context.config['esbuild_params']
 
         if params != "":
@@ -238,7 +205,7 @@ def handle_post_processing(context: ZMakeContext):
     js_dir = context.path / "build" / context.target_dir
     for file in js_dir.rglob("**/*.js"):
         if context.config["with_uglifyjs"]:
-            command = [format_npm_command("uglifyjs")]
+            command = ["uglifyjs"]
             params = context.config['uglifyjs_params']
             if params != "":
                 command.extend(params.split(" "))
@@ -258,7 +225,7 @@ def zepp_preview(context: ZMakeContext):
         context.logger.info("Skip, disabled")
         return
 
-    command = [format_npm_command("zepp-preview"),
+    command = ["zepp-preview",
                "-o", context.path / "dist",
                "--gif",
                context.path / "build"]
