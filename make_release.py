@@ -1,4 +1,5 @@
 import os.path
+import platform
 import shutil
 import subprocess
 import sys
@@ -16,7 +17,10 @@ if sys.platform == "win32":
     result_file = "zmake.exe"
 elif sys.platform == "darwin":
     pyinstaller = "./venv/bin/pyinstaller"
-    spec_file = "zmake_darwin.spec"
+    if platform.platform().startswith("macOS-10"):
+        spec_file = "zmake_darwin_legacy.spec"
+    else:
+        spec_file = "zmake_darwin.spec"
     result_file = "zmake.app"
 else:
     pyinstaller = "./venv/bin/pyinstaller"

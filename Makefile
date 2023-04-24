@@ -3,9 +3,13 @@ DESTDIR=
 all:
 	echo "Nothing to do"
 
-make_qt:
-	pyside6-uic -o zmake_qt/_guide_window.py zmake_qt/_guide_window.ui
-	pyside6-uic -o zmake_qt/_progress_window.py zmake_qt/_progress_window.ui
+make_qt5:
+	pyside2-uic -o zmake_qt/qt5/guide_window.py zmake_qt/qt_src/guide_window.ui
+	pyside2-uic -o zmake_qt/qt5/progress_window.py zmake_qt/qt_src/progress_window.ui
+
+make_qt6:
+	pyside6-uic -o zmake_qt/qt6/guide_window.py zmake_qt/qt_src/guide_window.ui
+	pyside6-uic -o zmake_qt/qt6/progress_window.py zmake_qt/qt_src/progress_window.ui
 
 install:
 	rm -rf ${DESTDIR}/opt/zmake

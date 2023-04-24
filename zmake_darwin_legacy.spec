@@ -16,7 +16,7 @@ a = Analysis(
     excludes=[
         'tk',
         'PIL.ImageTk',
-        'PySide2',
+        'PySide6-Essentials',
     ],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,

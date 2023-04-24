@@ -4,8 +4,12 @@ import threading
 import time
 from pathlib import Path
 
-from PySide6.QtCore import QThread, Signal
-from PySide6.QtWidgets import QApplication, QInputDialog
+try:
+    from PySide6.QtCore import QThread, Signal
+    from PySide6.QtWidgets import QApplication, QInputDialog
+except ImportError:
+    from PySide2.QtCore import QThread, Signal
+    from PySide2.QtWidgets import QApplication, QInputDialog
 
 from zmake import ZMakeContext
 from zmake_qt.main import ProgressWindow, GuideWindow
