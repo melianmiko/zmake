@@ -1,7 +1,7 @@
 import subprocess
 import webbrowser
 
-from PySide2.QtWidgets import QMainWindow
+from PySide6.QtWidgets import QMainWindow
 
 import zmake
 from zmake.utils import APP_PATH

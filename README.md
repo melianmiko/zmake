@@ -94,7 +94,7 @@ Result will appear in `dist` directory.
 
 ### macOS
 Requires Python 3.10 from homebrew, with newer version won't work,
-due to PySide2.
+due to PySide6.
 
 ```bash
 # Grab sources
