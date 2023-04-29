@@ -4,7 +4,7 @@ import sys
 import traceback
 from pathlib import Path
 
-from zmake import ZMakeContext, GUIDE
+from zmake import ZMakeContext, GUIDE, utils, constants
 from zmake.context import QuietExitException
 
 def main():
@@ -16,6 +16,10 @@ def main():
 
     if len(sys.argv) < 2:
         print(GUIDE)
+        print("Config locations:")
+        print(f'  {utils.APP_PATH / "zmake.json"}')
+        print(f'  {constants.CONFIG_DIR / "zmake.json"}')
+        print("")
         print("Press any key to exit")
         input()
         raise SystemExit

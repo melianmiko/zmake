@@ -1,3 +1,6 @@
+import sys
+from pathlib import Path
+
 VERSION = "v1.7"
 
 GUIDE = f"""zmake {VERSION} by melianmiko
@@ -15,3 +18,10 @@ If you push
 https://melianmiko.ru/en/zmake
 https://github.com/melianmiko/zmake
 """
+
+if sys.platform == "win32":
+    CONFIG_DIR = Path.home() / "AppData/Roaming"
+elif sys.platform == "darwin":
+    CONFIG_DIR = Path.home() / "Library/Application Support"
+else:
+    CONFIG_DIR = Path.home() / ".config"

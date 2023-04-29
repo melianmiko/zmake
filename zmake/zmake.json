@@ -1,0 +1,31 @@
+{
+  "def_format": "TGA-P",
+  "auto_rgba": true,
+  "swap_red_and_blue": false,
+  "target_dir_override": "",
+
+  "esbuild": false,
+  "esbuild_params": "--bundle",
+
+  "with_uglifyjs": false,
+  "uglifyjs_params": "",
+
+  "with_zepp_preview": false,
+  "add_preview_asset": false,
+
+  "with_adb": false,
+  "adb_path": "/storage/emulated/0/Android/data/com.xiaomi.hm.health/files/watch_skin_local",
+
+  "with_zeus_compat": false,
+  "zeus_target": "mi-band7",
+  "zeus_platforms": [
+    {
+      "name": "amazfit-band7",
+      "deviceSource": 253
+    },
+    {
+      "name": "amazfit-band7-w",
+      "deviceSource": 254
+    }
+  ]
+}

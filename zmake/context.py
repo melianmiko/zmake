@@ -6,7 +6,7 @@ from pathlib import Path
 from zipfile import ZipFile
 
 import random
-from zmake import utils, image_io
+from zmake import utils, image_io, constants
 
 BUILD_HANDLERS = []
 
@@ -38,14 +38,32 @@ class ZMakeContext:
         self.zeus_platform_target = ""
         self.path = path
         self.path_assets = path / "assets"
-        self.config = json.loads(utils.get_app_asset("config.json"))
+        self.config = {}
         self.app_json = {}
         self.logger = logging.getLogger("zmake")
 
-        if (path / "zmake.json").is_file():
-            self.merge_app_config()
-
+        self.load_config()
         self.apply_config()
+
+    def load_config(self):
+        self.logger.info("Use config files:")
+        for file in self.list_config_locations():
+            if not file.is_file():
+                continue
+
+            self.logger.info(f"  {file}")
+            with file.open("r", encoding="utf8") as f:
+                overlay = json.loads(f.read())
+
+            for i in overlay:
+                self.config[i] = overlay[i]
+
+    def list_config_locations(self):
+        return [
+            utils.APP_PATH / "zmake.json",
+            self.path / "zmake.json",
+            constants.CONFIG_DIR / "zmake.json"
+        ]
 
     def ask_question(self, message, options):
         self.logger.info(message)
@@ -183,14 +201,6 @@ class ZMakeContext:
                 self.logger.exception(f"FAILED, file {file}")
                 raise e
 
-    def merge_app_config(self):
-        self.logger.debug("Use config overlay")
-        with (self.path / "zmake.json").open("r", encoding="utf8") as f:
-            overlay = json.loads(f.read())
-
-        for i in overlay:
-            self.config[i] = overlay[i]
-
     def apply_config(self):
         image_io.swap_red_and_blue = self.config["swap_red_and_blue"]
 
@@ -205,7 +215,6 @@ class ZMakeContext:
             self.target_dir = self.config["target_dir_override"]
 
         for name, func in BUILD_HANDLERS:
-            self.logger.info(f"-- Stage: {name}")
             func(self)
 
         self.logger.info("Completed without error.")

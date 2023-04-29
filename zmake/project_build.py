@@ -39,6 +39,7 @@ def prepare(context: ZMakeContext):
 
 @build_handler("Process app.json")
 def process_app_json(context: ZMakeContext):
+    context.logger.info("Processing app.json:")
     package_info = {
         "mode": "preview",
         "timeStamp": round(time.time()),
@@ -51,11 +52,10 @@ def process_app_json(context: ZMakeContext):
     context.app_json["platforms"] = context.config["zeus_platforms"]
 
     if "targets" in context.app_json:
-        context.logger.info("Found `targets` section in app.json")
         target_id = context.config["zeus_target"]
         if target_id not in context.app_json:
             target_id = list(context.app_json["targets"].keys())[0]
-        context.logger.info(f"Use \"{target_id}\" target")
+        context.logger.info(f"  Found targets, use \"{target_id}\" target")
 
         context.path_assets = context.path / "assets" / target_id
 
@@ -68,12 +68,16 @@ def process_app_json(context: ZMakeContext):
     with open(context.path / "build" / "app.json", "w") as f:
         f.write(app_json_string)
 
+    context.logger.info("  Done")
+
 
 @build_handler("Convert assets")
 def handle_assets(context: ZMakeContext):
     source = context.path_assets
     dest = context.path / "build" / "assets"
     dest.mkdir()
+
+    context.logger.info("Processing assets:")
 
     statistics = {}
     for file in source.rglob("**/*"):
@@ -110,20 +114,24 @@ def handle_assets(context: ZMakeContext):
         context.logger.info(f"  {statistics[key]} saved in {key} format")
 
 
-@build_handler("Common files, app.js")
+@build_handler("Common files")
 def common_files(context: ZMakeContext):
+    context.logger.info("Copying common files:")
     for fn in LIST_COMMON_FILES:
         p = context.path / fn
         if p.exists():
             context.logger.debug(f"Copy file {fn}")
             shutil.copy(p, context.path / "build" / fn)
+            context.logger.info(f"Add {fn}")
+    context.logger.info("  Done")
 
 
 @build_handler("Build app.js")
 def handle_appjs(context: ZMakeContext):
+    context.logger.info("Processing app.js:")
     if not (context.path / "app.js").is_file():
         shutil.copy(f"{utils.APP_PATH}/data/app.js", context.path / "build/app.js")
-        context.logger.info("Use our app.js template, because they don't exist in proj")
+        context.logger.info("  Use our app.js template")
         return
 
     if context.config["esbuild"]:
@@ -133,8 +141,8 @@ def handle_appjs(context: ZMakeContext):
         if params != "":
             command.extend(params.split(" "))
 
-        if context.config["with_zeus_overrides"]:
-            context.logger.info("Add zeus_fixes_inject")
+        if context.config["with_zeus_compat"]:
+            context.logger.info("  Add zeus_fixes_inject.js")
             command.append(f"--inject:{utils.APP_PATH / 'data' / 'zeus_fixes_inject.js'}")
 
         command.extend(["--platform=node",
@@ -148,12 +156,15 @@ def handle_appjs(context: ZMakeContext):
         shutil.copy(context.path / "app.js",
                     context.path / "build" / "app.js")
 
+    context.logger.info("Done")
+
 
 @build_handler("Build page from src/lib")
 def handle_src(context: ZMakeContext):
-    if not (context.path / "src").is_dir():
+    if not (context.path / "src").is_dir() or (context.path / context.target_dir / "index.js").is_file():
         return
 
+    context.logger.info("Combine src/lib files to index.js:")
     out = ""
     for directory in [context.path / 'lib', context.path / 'src']:
         if not directory.is_dir():
@@ -175,7 +186,7 @@ def handle_src(context: ZMakeContext):
     with open(fn, "w", encoding="utf8") as f:
         f.write(out)
 
-    context.logger.info(f"Created build/{context.target_dir}/index.js")
+    context.logger.info(f"  Done")
 
 
 @build_handler("Process exiting pages")
@@ -183,6 +194,7 @@ def handle_app(context: ZMakeContext):
     if not (context.path / context.target_dir).is_dir():
         return
 
+    context.logger.info(f"Processing \"{context.target_dir}\" JS files:")
     src_dir = context.path / context.target_dir
     out_dir = context.path / 'build' / context.target_dir
 
@@ -203,17 +215,22 @@ def handle_app(context: ZMakeContext):
                         "--format=iife"])
         command.extend(list(src_dir.rglob("**/*.js")))
         run_ext_tool(command, context, "ESBuild")
+        context.logger.info("  ESBuild finished successfully")
     else:
+        i = 0
         for file in src_dir.rglob("**/*.js"):
             relative_path = str(file)[len(str(src_dir)) + 1:]
             dest_file = out_dir / relative_path
             dest_file.parent.mkdir(parents=True, exist_ok=True)
 
             shutil.copy(file, dest_file)
+            i += 1
+        context.logger.info(f"  Copied {i} files")
 
 
 @build_handler("Post-processing JS files")
 def handle_post_processing(context: ZMakeContext):
+    i = 0
     js_dir = context.path / "build" / context.target_dir
     for file in js_dir.rglob("**/*.js"):
         if context.config["with_uglifyjs"]:
@@ -229,12 +246,14 @@ def handle_post_processing(context: ZMakeContext):
             content = utils.get_app_asset("comment.js") + "\n" + f.read()
         with open(file, "w", encoding="utf8") as f:
             f.write(content)
+        i += 1
+
+    context.logger.info(f"  Post-processed {i} files")
 
 
 @build_handler("Preview")
 def zepp_preview(context: ZMakeContext):
-    if not context.config["mk_preview"]:
-        context.logger.info("Skip, disabled")
+    if not context.config["with_zepp_preview"]:
         return
 
     command = ["zepp-preview",
@@ -242,20 +261,25 @@ def zepp_preview(context: ZMakeContext):
                "--gif",
                context.path / "build"]
 
+    context.logger.info("Creating 'preview.png':")
+
     run_ext_tool(command, context, "ZeppPreview")
     assert (context.path / "dist/preview.png").is_file()
     assert (context.path / "dist/preview.gif").is_file()
 
     if context.config["add_preview_asset"] and (context.path / "build" / "watchface").is_dir():
-        context.logger.info("Add preview.png (128x326) to assets")
+        context.logger.info("  Add preview.png (128x326) to assets")
         pv = Image.open(context.path / "dist/preview.png")
         pv.thumbnail((128, 326))
         pv = pv.convert("RGB").quantize(256)
         image_io.save_auto(pv, context.path / "build/assets/preview.png", "TGA-RLP")
 
+    context.logger.info("  Done")
+
 
 @build_handler("Package BIN and ZIP")
 def package(context: ZMakeContext):
+    context.logger.info("Packaging:")
     basename = context.path.name
     dist_bin = context.path / "dist" / f"{basename}.bin"
     with ZipFile(dist_bin, "w", ZIP_DEFLATED) as arc:
@@ -278,11 +302,12 @@ def package(context: ZMakeContext):
         if (context.path / "dist/preview.png").is_file():
             arc.write(context.path / "dist/preview.png", f"{basename}/{basename}.png")
 
+    context.logger.info("  Created BIN/ZIP files")
+
 
 @build_handler("Make ZEUS package")
 def make_zeus_pkg(context: ZMakeContext):
-    if not context.config["mk_zeus_pkg"]:
-        context.logger.info("Skip, disabled")
+    if not context.config["with_zeus_compat"]:
         return
     basename = context.path.name
 
@@ -305,24 +330,26 @@ def make_zeus_pkg(context: ZMakeContext):
         arc.writestr("device.zip", device_zip_file.getvalue())
         arc.writestr("app-side.zip", app_side_zip_file.getvalue())
 
+    context.logger.info("  Created ZPK file")
+
 
 @build_handler("ADB Install")
 def adb_install(context: ZMakeContext):
-    if not context.config["adb_install"]:
-        context.logger.info("Skip, disabled")
+    if not context.config["with_adb"]:
         return
 
+    context.logger.info("Uploading to phone via ADB:")
     path = context.config["adb_path"]
 
     basename = context.path.name
     dist_zip = context.path / "dist" / f"{basename}.zip"
 
-    adb = format_executable("adb")
-
     try:
-        run_ext_tool([adb, "shell", "mkdir", "-p", path], context, "ADB")
-        run_ext_tool([adb, "push", dist_zip, path], context, "ADB")
-        run_ext_tool([adb, "shell", f"cd {path} && unzip -o {basename}.zip"], context, "ADB")
-        run_ext_tool([adb, "shell", "rm", f"{path}/{basename}.zip"], context, "ADB")
+        run_ext_tool(["adb", "shell", "mkdir", "-p", path], context, "ADB")
+        run_ext_tool(["adb", "push", dist_zip, path], context, "ADB")
+        run_ext_tool(["adb", "shell", f"cd {path} && unzip -o {basename}.zip"], context, "ADB")
+        run_ext_tool(['adb', "shell", "rm", f"{path}/{basename}.zip"], context, "ADB")
     except AssertionError:
-        context.logger.info("ADB install failed, ignore")
+        context.logger.info("  Failed, ignore")
+
+    context.logger.info("  ")
