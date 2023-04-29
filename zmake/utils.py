@@ -18,6 +18,14 @@ def get_app_asset(name: str):
     return data
 
 
+def increment_or_add(dictionary, key):
+    if key not in dictionary:
+        dictionary[key] = 1
+        return
+
+    dictionary[key] += 1
+
+
 def image_color_compress(image: Image.Image, file: Path | None, log: logging.Logger):
     log.debug(f"Start color compression for {image.format} {image.mode}")
     # Save fallback

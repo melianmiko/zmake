@@ -3,6 +3,7 @@ import json
 import os
 import shutil
 import time
+from collections import Counter
 from zipfile import ZipFile, ZIP_DEFLATED
 
 from PIL import Image
@@ -74,6 +75,7 @@ def handle_assets(context: ZMakeContext):
     dest = context.path / "build" / "assets"
     dest.mkdir()
 
+    statistics = {}
     for file in source.rglob("**/*"):
         rel_name = str(file)[len(str(source)) + 1:]
 
@@ -87,15 +89,25 @@ def handle_assets(context: ZMakeContext):
             if file_type == target_type or file_type == "N/A":
                 context.logger.info(f"Copy asset as is {file}")
                 shutil.copy(file, dest / rel_name)
+                utils.increment_or_add(statistics, "RAW")
                 continue
+
+            if context.config["auto_rgba"]:
+                count_colors = len(Counter(image.getdata()).values())
+                if count_colors > 256:
+                    target_type = "TGA-RGBA"
 
             if target_type in ["TGA-P", "TGA-RLP"] and not image.getcolors():
                 image = utils.image_color_compress(image, None, context.logger)
 
             image_io.save_auto(image, dest / rel_name, target_type)
+            utils.increment_or_add(statistics, target_type)
         except Exception as e:
             context.logger.exception(f"FAILED, file {file}")
             raise e
+
+    for key in statistics:
+        context.logger.info(f"  {statistics[key]} saved in {key} format")
 
 
 @build_handler("Common files, app.js")

@@ -10,6 +10,7 @@ from zmake.context import QuietExitException
 def main():
     if os.path.isfile(".zmake_debug"):
         logging.basicConfig(level=logging.DEBUG)
+        logging.getLogger("PIL.PngImagePlugin").disabled = True
     else:
         logging.basicConfig(level=logging.INFO, format="%(message)s")
 

@@ -1,5 +1,6 @@
 {
   "def_format": "TGA-P",
+  "auto_rgba": true,
   "with_uglifyjs": false,
   "with_zeus_overrides": false,
   "swap_red_and_blue": false,
