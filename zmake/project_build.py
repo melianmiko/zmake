@@ -99,12 +99,13 @@ def handle_assets(context: ZMakeContext):
             if context.config["auto_rgba"]:
                 count_colors = len(Counter(image.getdata()).values())
                 if count_colors > 256:
-                    target_type = "TGA-RGBA"
+                    target_type = "TGA-32"
 
             if target_type in ["TGA-P", "TGA-RLP"] and not image.getcolors():
                 image = utils.image_color_compress(image, None, context.logger)
 
-            image_io.save_auto(image, dest / rel_name, target_type)
+            ret = image_io.save_auto(image, dest / rel_name, target_type)
+            assert ret is True
             utils.increment_or_add(statistics, target_type)
         except Exception as e:
             context.logger.exception(f"FAILED, file {file}")

@@ -1,6 +1,15 @@
+zmake (1.8-b1) bookworm jammy kinetic lunar; urgency=medium
+
+  * New: zeus-cli compat features (experimental)
+  * New: auto-rgba mode
+  * Fix: macOS: esbuild path resolve
+  * Fix: macOS: Hand on build finish
+  * Misc: macOS: add ability to build with PySide6 instead of PySide2
+
+ -- MelianMiko <melianmiko@gmail.com>  Sat, 29 Apr 2023 18:04:13 +0700
+
 zmake (1.7-1) bookworm jammy kinetic lunar; urgency=medium
 
   * First debian build
 
  -- MelianMiko <melianmiko@gmail.com>  Sat, 15 Apr 2023 23:06:56 +0700
-

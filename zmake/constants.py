@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 
-VERSION = "v1.7"
+VERSION = "v1.8"
 
 GUIDE = f"""zmake {VERSION} by melianmiko
 
