@@ -8,7 +8,10 @@ a = Analysis(
     ['zmake_qt/__main__.py'],
     pathex=['.'],
     binaries=[],
-    datas=[('zmake/data', 'data')],
+    datas=[
+        ('zmake/data', 'data')
+        ('zmake/zmake.json', 'zmake.json'),
+    ],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

@@ -42,6 +42,7 @@ if sys.platform == "darwin":
 # Package other platform
 with ZipFile(f"dist/ZMake_{VERSION}_{sys.platform}.zip", "w", ZIP_DEFLATED) as f:
     f.write(f"dist/{result_file}", result_file)
+    f.write("zmake/zmake.json", "zmake.json")
 
     for ff in Path("zmake/data").rglob("**/*"):
         f.write(ff, f"data/{ff.name}")
