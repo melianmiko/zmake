@@ -33,7 +33,7 @@ def image_color_compress(image: Image.Image, file: Path | None, log: logging.Log
     # Save fallback
     if file is not None:
         if not BACKUP_DIR.exists():
-            BACKUP_DIR.mkdir()
+            BACKUP_DIR.mkdir(parents=True)
 
         time_tag = str(datetime.today()).replace(' ', '_').replace(':', '')
         path = BACKUP_DIR / f"{time_tag}__{file.name}"
