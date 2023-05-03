@@ -60,7 +60,7 @@ def load_palette_tga(f, swap_red_and_blue=False):
     palette_raw = _fetch_palette(f, palette_length, swap_red_and_blue)
     img_data = f.read(width*height)
     if len(f.peek()) > 0:
-        log.info("WARNING: NOT ALL DATA PARSED, looks like it's a bug")
+        log.debug("WARNING: NOT ALL DATA PARSED, looks like it's a bug")
         log.debug(f"peek_size={len(f.peek())}")
 
     image = Image.new("P", (width, height))

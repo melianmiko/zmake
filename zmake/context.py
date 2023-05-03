@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import shutil
+from collections import Counter
 from pathlib import Path
 from zipfile import ZipFile
 
@@ -170,6 +171,7 @@ class ZMakeContext:
         if self.path.is_file():
             iterator = [self.path]
 
+        statistics = {}
         for file in iterator:
             try:
                 image, file_type = image_io.load_auto(file)
@@ -177,13 +179,23 @@ class ZMakeContext:
                 if file_type == target_type or file_type == "N/A":
                     continue
 
+                if self.config["auto_rgba"]:
+                    count_colors = len(Counter(image.getdata()).values())
+                    if count_colors > 256:
+                        target_type = "TGA-32"
+
                 if target_type in ["TGA-P", "TGA-RLP"] and not image.getcolors():
                     image = utils.image_color_compress(image, file, self.logger)
 
-                image_io.save_auto(image, file, target_type)
+                ret = image_io.save_auto(image, file, target_type)
+                assert ret is True
+                utils.increment_or_add(statistics, target_type)
             except Exception as e:
                 self.logger.exception(f"FAILED, file {file}")
                 raise e
+
+        for key in statistics:
+            self.logger.info(f"  {statistics[key]} saved in {key} format")
 
     def process_decode_images(self):
         iterator = self.path.rglob("**/*.png")

@@ -25,3 +25,5 @@ elif sys.platform == "darwin":
     CONFIG_DIR = Path.home() / "Library/Application Support"
 else:
     CONFIG_DIR = Path.home() / ".config"
+
+BACKUP_DIR = CONFIG_DIR / "backup"

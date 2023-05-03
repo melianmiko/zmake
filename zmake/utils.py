@@ -6,6 +6,8 @@ from pathlib import Path
 
 from PIL import Image
 
+from zmake.constants import BACKUP_DIR
+
 if getattr(sys, 'frozen', False):
     APP_PATH = Path(os.path.dirname(sys.executable))
 else:
@@ -30,13 +32,12 @@ def image_color_compress(image: Image.Image, file: Path | None, log: logging.Log
     log.debug(f"Start color compression for {image.format} {image.mode}")
     # Save fallback
     if file is not None:
-        if not (APP_PATH / "backup").exists():
-            (APP_PATH / "backup").mkdir()
+        if not BACKUP_DIR.exists():
+            BACKUP_DIR.mkdir()
 
-        log.warning(f"[!] Color compression applied: {file}")
         time_tag = str(datetime.today()).replace(' ', '_').replace(':', '')
-        path = APP_PATH / "backup" / f"{time_tag}__{file.name}"
-        log.info(f"Backup at {path}")
+        path = BACKUP_DIR / f"{time_tag}__{file.name}"
+        log.warning(f"  [!] Color compression applied: {file}, backup at {path}")
         image.save(path)
 
     # Quantize
