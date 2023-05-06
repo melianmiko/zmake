@@ -2,6 +2,7 @@ import io
 import json
 import os
 import shutil
+import subprocess
 import time
 from collections import Counter
 from zipfile import ZipFile, ZIP_DEFLATED
@@ -354,3 +355,11 @@ def adb_install(context: ZMakeContext):
         context.logger.info("  Failed, ignore")
 
     context.logger.info("  ")
+
+
+@build_handler("Post-build command")
+def post_build(context: ZMakeContext):
+    if context.config["post_build_script"] == "":
+        return
+
+    subprocess.Popen([context.config["post_build_script"], str(context.path)]).wait()
