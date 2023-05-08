@@ -7,6 +7,7 @@ from pathlib import Path
 from zmake import ZMakeContext, GUIDE, utils, constants
 from zmake.context import QuietExitException
 
+
 def main():
     if os.path.isfile(".zmake_debug"):
         logging.basicConfig(level=logging.DEBUG)

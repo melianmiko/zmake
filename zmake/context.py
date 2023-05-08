@@ -62,8 +62,8 @@ class ZMakeContext:
     def list_config_locations(self):
         return [
             utils.APP_PATH / "zmake.json",
+            constants.CONFIG_DIR / "zmake.json",
             self.path / "zmake.json",
-            constants.CONFIG_DIR / "zmake.json"
         ]
 
     def ask_question(self, message, options):
