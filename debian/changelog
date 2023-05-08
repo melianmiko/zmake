@@ -1,3 +1,10 @@
+zmake (1.8.1-1) bookworm jammy kinetic lunar; urgency=medium
+  
+  * New: option to run custom script after build
+  * Fix: config files read order
+
+ -- MelianMiko <melianmiko@gmail.com>  Mon, 08 May 2023 16:12:38 +0700
+
 zmake (1.8-1) bookworm jammy kinetic lunar; urgency=medium
 
   * New: zeus-cli compat features (experimental)
