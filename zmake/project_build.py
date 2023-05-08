@@ -207,7 +207,7 @@ def handle_app(context: ZMakeContext):
         if params != "":
             command.extend(params.split(" "))
 
-        if context.config["with_zeus_overrides"]:
+        if context.config["with_zeus_compat"]:
             context.logger.info("Add zeus_fixes_inject")
             command.append(f"--inject:{utils.APP_PATH / 'data' / 'zeus_fixes_inject.js'}")
 
