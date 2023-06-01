@@ -17,11 +17,7 @@ if sys.platform == "win32":
     result_file = "zmake.exe"
 elif sys.platform == "darwin":
     pyinstaller = "./venv/bin/pyinstaller"
-    if platform.platform().startswith("macOS-10"):
-        print("WARN: Build with PySide2, due to macOS lower than 11")
-        spec_file = "zmake_darwin_legacy.spec"
-    else:
-        spec_file = "zmake_darwin.spec"
+    spec_file = "zmake_darwin.spec"
     result_file = "zmake.app"
 else:
     pyinstaller = "./venv/bin/pyinstaller"

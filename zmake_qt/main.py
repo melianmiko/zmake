@@ -4,14 +4,9 @@ import webbrowser
 import zmake
 from zmake.utils import APP_PATH
 
-try:
-    from PySide6.QtWidgets import QMainWindow
-    from zmake_qt.qt6.guide_window import Ui_GuideWindow
-    from zmake_qt.qt6.progress_window import Ui_ProgressWindow
-except ImportError:
-    from PySide2.QtWidgets import QMainWindow
-    from zmake_qt.qt5.guide_window import Ui_GuideWindow
-    from zmake_qt.qt5.progress_window import Ui_ProgressWindow
+from PySide6.QtWidgets import QMainWindow
+from zmake_qt.qt6.guide_window import Ui_GuideWindow
+from zmake_qt.qt6.progress_window import Ui_ProgressWindow
 
 
 # noinspection PyMethodMayBeStatic
