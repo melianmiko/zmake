@@ -30,6 +30,7 @@ def increment_or_add(dictionary, key):
 
 def image_color_compress(image: Image.Image, file: Path | None, log: logging.Logger):
     log.debug(f"Start color compression for {image.format} {image.mode}")
+
     # Save fallback
     if file is not None:
         if not BACKUP_DIR.exists():

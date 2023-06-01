@@ -1,12 +1,12 @@
 import json
 import logging
 import os
+import random
 import shutil
 from collections import Counter
 from pathlib import Path
 from zipfile import ZipFile
 
-import random
 from zmake import utils, image_io, constants
 
 BUILD_HANDLERS = []

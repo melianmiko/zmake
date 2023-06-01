@@ -25,7 +25,7 @@ def get_format(path: Path):
         elif header[2] == 9:
             return "TGA-RLP"
         else:
-            return None, "N/A"
+            return "N/A"
 
 
 def load_auto(path: Path):

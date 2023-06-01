@@ -1,7 +1,4 @@
 Pillow==9.4.0
 pyinstaller==5.7
 pyinstaller-hooks-contrib==2022.8
-
-# Both are needed, PySide6 for macOS 11+, PySide2 for macOS 10-
-#PySide2==5.15.2.1
 PySide6-Essentials==6.5.0

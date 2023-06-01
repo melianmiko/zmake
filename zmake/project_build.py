@@ -17,7 +17,8 @@ LIST_COMMON_FILES = [
     "README.txt",
     "LICENSE.txt",
     "README",
-    "LICENSE"
+    "LICENSE",
+    "secondary-widget"
 ]
 
 
@@ -54,7 +55,7 @@ def process_app_json(context: ZMakeContext):
 
     if "targets" in context.app_json:
         target_id = context.config["zeus_target"]
-        if target_id not in context.app_json:
+        if target_id not in context.app_json["targets"]:
             target_id = list(context.app_json["targets"].keys())[0]
         context.logger.info(f"  Found targets, use \"{target_id}\" target")
 
@@ -119,12 +120,15 @@ def handle_assets(context: ZMakeContext):
 @build_handler("Common files")
 def common_files(context: ZMakeContext):
     context.logger.info("Copying common files:")
-    for fn in LIST_COMMON_FILES:
+    files = LIST_COMMON_FILES
+    for fn in files:
         p = context.path / fn
-        if p.exists():
-            context.logger.debug(f"Copy file {fn}")
+        if p.is_dir():
+            context.logger.info(f"  Copy folder {fn}")
+            shutil.copytree(p, context.path / "build" / fn)
+        elif p.is_file():
+            context.logger.info(f"  Copy file {fn}")
             shutil.copy(p, context.path / "build" / fn)
-            context.logger.info(f"Add {fn}")
     context.logger.info("  Done")
 
 
