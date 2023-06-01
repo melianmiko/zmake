@@ -1,0 +1,4 @@
+.vagrant
+/output
+!/output/.folder
+

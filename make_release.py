@@ -13,15 +13,15 @@ if os.path.isdir("dist"):
 
 if sys.platform == "win32":
     pyinstaller = "./venv/Scripts/pyinstaller"
-    spec_file = "zmake_win32.spec"
+    spec_file = "zmake.win32.spec"
     result_file = "zmake.exe"
 elif sys.platform == "darwin":
     pyinstaller = "./venv/bin/pyinstaller"
-    spec_file = "zmake_darwin.spec"
+    spec_file = "zmake.osx.spec"
     result_file = "zmake.app"
 else:
     pyinstaller = "./venv/bin/pyinstaller"
-    spec_file = "zmake_linux.spec"
+    spec_file = "zmake.linux.spec"
     result_file = "zmake"
 
 # Build

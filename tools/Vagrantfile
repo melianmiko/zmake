@@ -1,0 +1,199 @@
+# For windows\macOS
+use_folders = [
+  "docs",
+  "zmake",
+  "zmake_qt"
+]
+
+use_files = [
+  "requirements.txt",
+  "zmake.win32.spec",
+  "zmake.osx.spec",
+  "make_release.py"
+]
+
+# For normal OS images which have RSync
+exclude_files = [
+  "venv",
+  "build",
+  "dist",
+  "tools/output"
+]
+
+Vagrant.configure("2") do |config|
+
+  # Link output folder (also used for temporary files
+  config.vm.synced_folder "./output", "/home/vagrant/output"
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+
+  # ------------------------------
+  #      Make Debian package
+  # ------------------------------
+  config.vm.define "make_debian" do |debian|
+    # Config
+    debian.vm.box = "debian/bullseye64"
+    debian.vm.provider "virtualbox" do |v|
+      v.memory = 512
+      v.cpus = 1
+      v.linked_clone = true
+    end
+    
+    # Set up rsync
+    debian.vm.synced_folder "../", "/home/vagrant/zmake", type: "rsync", rsync__exclude: exclude_files
+
+    # Install dependencies
+    debian.vm.provision "Install dependencies", type: "shell", run: "once", inline: <<-SHELL
+      cd zmake
+      MAKE_DEPS=$(perl -ne 'next if /^#/; $p=(s/^Build-Depends:\\s*/ / or (/^ / and $p)); s/,|\\n|\\([^)]+\\)//mg; print if $p' < debian/control)
+      echo Deps: $MAKE_DEPS
+
+      sudo apt install -y build-essential $MAKE_DEPS
+    SHELL
+
+    # Run dpkg
+    debian.vm.provision "Build project", type: "shell", run: "always", inline: <<-SHELL
+      cd zmake
+
+      echo "Build Debian package..."
+      dpkg-buildpackage -b
+      cp ../*.deb ../output/
+    SHELL
+
+    if ENV['vg_auto_halt'] == "true"
+      debian.vm.provision "Auto-poweroff", type: "shell", privileged: false, run: "always", inline: <<-SHELL
+        (sleep 15 && sudo poweroff) &
+      SHELL
+    end
+  end
+
+  # ------------------------------
+  #         Make macOS
+  # ------------------------------
+  config.vm.define "make_macos" do |mac|
+    # Config
+    mac.vm.box = "tampham/automation-macos"
+    mac.vm.provider "virtualbox" do |v|
+      v.memory = 4096
+      v.cpus = 4
+      v.linked_clone = true
+
+      # For non-Intel CPUs
+      v.customize ["modifyvm", :id, "--cpu-profile", "Intel Core i7-6700K"]
+
+      # For non-macOS hosts
+      v.customize ["modifyvm", :id, "--cpuidset", "00000001", "000106e5", "00100800", "0098e3fd", "bfebfbff"]
+      v.customize ["setextradata", :id, "VBoxInternal/Devices/efi/0/Config/DmiSystemProduct", "iMac19,1"]
+      v.customize ["setextradata", :id, "VBoxInternal/Devices/efi/0/Config/DmiSystemVersion", "1.0"]
+      v.customize ["setextradata", :id, "VBoxInternal/Devices/efi/0/Config/DmiBoardProduct", "Mac-AA95B1DDAB278B95"]
+      v.customize ["setextradata", :id, "VBoxInternal/Devices/smc/0/Config/DeviceKey", "ourhardworkbythesewordsguardedpleasedontsteal(c)AppleComputerInc"]
+      v.customize ["setextradata", :id, "VBoxInternal/Devices/smc/0/Config/GetKeyFromRealSMC", "1"]
+    end
+
+    # Fucking macOS container asks password for each provision
+    mac.ssh.username = "vagrant"
+    mac.ssh.password = "vagrant"
+    mac.ssh.keys_only = false
+    mac.ssh.insert_key = false
+
+    # Link project files (wtf provision "file" dont have exclude option??)
+    # RSync don't work with that image
+    for item in use_folders do
+      mac.vm.provision "file", source: "../#{item}/.", destination: "/Users/vagrant/zmake/#{item}", run: "always"
+    end
+    for item in use_files do
+      mac.vm.provision "file", source: "../#{item}", destination: "/Users/vagrant/zmake/", run: "always"
+    end
+
+    # Sync output back to host
+    mac.vm.synced_folder "./output", "/home/vagrant/output", disabled: true
+    mac.trigger.after :up do |trigger|
+      trigger.info = "Sync back output folder"
+      trigger.run = {path: "fetch_macos_output.sh"}
+    end
+
+    # Install dependencies
+    mac.vm.provision "Install homebrew", type: "shell", privileged: false, inline: <<-SHELL
+      [ ! -f /usr/local/bin/brew ] && /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+      true
+    SHELL
+    mac.vm.provision "Install packages", type: "shell", privileged: false, inline: <<-SHELL
+      export HOMEBREW_NO_AUTO_UPDATE=1
+      brew install python@3.11 upx
+    SHELL
+
+    # Make make make make
+    mac.vm.provision "Build project", type: "shell", privileged: false, run: "always", inline: <<-SHELL
+      cd zmake
+      mkdir -p ~/output
+      rm -rf ~/output/*
+
+      echo "Create venv & install python deps..."
+      python3.11 -m venv venv
+      ./venv/bin/pip install -r requirements.txt
+
+      echo "Run make_release.py..."
+      ./venv/bin/python make_release.py
+
+      echo "Collecting output..."
+      cp dist/*.tar.gz ~/output/
+    SHELL
+
+    if ENV['vg_auto_halt'] == "true"
+      mac.vm.provision "Auto-poweroff", type: "shell", privileged: false, run: "always", inline: <<-SHELL
+        (sleep 15 && sudo shutdown -h now) &
+      SHELL
+    end
+  end
+
+  # ------------------------------
+  #        Make Windows
+  # ------------------------------
+  config.vm.define "make_windows" do |win|
+    # Configure
+    win.vm.box = "gusztavvargadr/windows-server-2022-standard-core"
+    win.vm.provider "virtualbox" do |v|
+      v.memory = 2048
+      v.cpus = 4
+      v.linked_clone = true
+    end
+
+    # Install deps
+    win.vm.provision "Install dependencies (with choco)", type: "shell", privileged: true, run: "once", inline: <<-SHELL
+      choco install python311 upx -y --no-progress
+      
+      mkdir C:\\zmake\\
+    SHELL
+
+    # Link project files (wtf provision "file" dont have exclude option??)
+    # RSync don't work with that image
+    for item in use_folders do
+      win.vm.provision "file", source: "../#{item}/.", destination: "/zmake/", run: "always"
+    end
+    for item in use_files do
+      win.vm.provision "file", source: "../#{item}", destination: "/zmake/", run: "always"
+    end
+
+    # Perform build
+    win.vm.provision "Build project", type: "shell", run: "always", inline: <<-SHELL
+      cd C:\\zmake
+
+      echo "Make venv..."
+      python3.11 -m venv venv
+      
+      echo "Installing python deps..."
+      ./venv/Scripts/pip install -r requirements.txt
+
+      echo "Run make-release"
+      ./venv/Scripts/python make_release.py
+
+      echo "Collect artifacts..."
+      cp dist\\*.zip C:\\home\\vagrant\\output\\
+    SHELL
+
+    if ENV['vg_auto_halt'] == "true"
+      win.vm.provision "Auto-poweroff", type: "shell", privileged: false, run: "always", inline: <<-SHELL
+        shutdown -s -t 15
+      SHELL
+    end
+  end
+end

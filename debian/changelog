@@ -1,3 +1,9 @@
+zmake (1.8.2-1) bookworm jammy kinetic lunar; urgency=medium
+
+  * Some minor fixes
+
+ -- MelianMiko <melianmiko@gmail.com>  Thu, 01 Jun 2023 17:12:25 +0700
+
 zmake (1.8.1-1) bookworm jammy kinetic lunar; urgency=medium
   
   * New: option to run custom script after build
