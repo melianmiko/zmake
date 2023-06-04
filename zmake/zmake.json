@@ -3,7 +3,8 @@
   "auto_rgba": true,
   "target_dir_override": "",
 
-  "encode_mode": "dialog",
+  "encode_mode": "nxp",
+  "package_extension": "zip",
 
   "esbuild": false,
   "esbuild_params": "--bundle",

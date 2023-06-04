@@ -287,8 +287,11 @@ def zepp_preview(context: ZMakeContext):
 def package(context: ZMakeContext):
     context.logger.info("Packaging:")
     basename = context.path.name
-    dist_bin = context.path / "dist" / f"{basename}.bin"
-    with ZipFile(dist_bin, "w", ZIP_DEFLATED) as arc:
+    encode_mode = context.config["encode_mode"]
+
+    device_extension = context.config["package_extension"]
+    device_zip = context.path / "dist" / f"{basename}.{device_extension}"
+    with ZipFile(device_zip, "w", ZIP_DEFLATED) as arc:
         for file in (context.path / "build").rglob("**/*"):
             fn = str(file)[len(str(context.path / "build")):]
             if ".DS_Store" in fn or "Thumbs.db" in fn:
@@ -297,16 +300,17 @@ def package(context: ZMakeContext):
             arc.write(file, fn)
 
     # ZIP
-    dist_infos = context.path / "dist/infos.xml"
-    with dist_infos.open("w") as f:
-        f.write(utils.get_app_asset("infos.xml").replace("{name}", basename))
+    if device_extension != "zip":
+        dist_infos = context.path / "dist/infos.xml"
+        with dist_infos.open("w") as f:
+            f.write(utils.get_app_asset("infos.xml").replace("{name}", basename))
 
-    dist_zip = context.path / "dist" / f"{basename}.zip"
-    with ZipFile(dist_zip, "w", ZIP_DEFLATED) as arc:
-        arc.write(dist_bin, f"{basename}/{basename}.bin")
-        arc.write(dist_infos, f"{basename}/infos.xml")
-        if (context.path / "dist/preview.png").is_file():
-            arc.write(context.path / "dist/preview.png", f"{basename}/{basename}.png")
+        dist_zip = context.path / "dist" / f"{basename}.zip"
+        with ZipFile(dist_zip, "w", ZIP_DEFLATED) as arc:
+            arc.write(device_zip, f"{basename}/{basename}.bin")
+            arc.write(dist_infos, f"{basename}/infos.xml")
+            if (context.path / "dist/preview.png").is_file():
+                arc.write(context.path / "dist/preview.png", f"{basename}/{basename}.png")
 
     context.logger.info("  Created BIN/ZIP files")
 
