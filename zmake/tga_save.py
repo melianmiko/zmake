@@ -7,6 +7,15 @@ def save_truecolor_tga(img: Image.Image, path: Path, depth, encode_mode="dialog"
     img = img.convert("RGBA")
     data = bytearray()
 
+    # TGA Width fix
+    real_width = img.width
+    if encode_mode == "nxp" and real_width % 16 != 0:
+        tga_width = real_width + 16 - (real_width % 16)
+        assert tga_width % 16 == 0
+        new_img = Image.new(img.mode, (tga_width, img.height))
+        new_img.paste(img)
+        img = new_img
+
     data.append(46)                                                     # ID len
     data.append(0)                                                      # Has colormap
     data.append(2)                                                      # Mode
@@ -18,7 +27,7 @@ def save_truecolor_tga(img: Image.Image, path: Path, depth, encode_mode="dialog"
 
     # ID data
     data.extend(b"\x53\x4f\x4d\x48")
-    data.extend(img.width.to_bytes(2, byteorder="little"))
+    data.extend(real_width.to_bytes(2, byteorder="little"))
     data.extend(b"\0" * 40)
 
     # Image data
@@ -28,17 +37,11 @@ def save_truecolor_tga(img: Image.Image, path: Path, depth, encode_mode="dialog"
             g = round(63/255 * pixel[1])
             b = round(31/255 * pixel[2])
 
-            if encode_mode == "nxp":
-                r, b = b, r
-
             data.append(((g & 0b111) << 5) + b)
             data.append((r << 3) + (g >> 3))
     elif depth == 32:
         for r, g, b, a in img.getdata():
-            if encode_mode == "nxp":
-                data.extend([r, g, b, a])
-            else:
-                data.extend([b, g, r, a])
+            data.extend([b, g, r, a])
     else:
         raise ValueError("Not supported")
 

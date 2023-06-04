@@ -30,6 +30,17 @@ in application folder and just run:
 
     ./zmake file_to_process
 
+**But in first of all, set `encode_mode` for your device.**
+Different Amazfit devices has some differences in their graphic encoding formats.
+By default, ZMake is configured to work with Mi Band 7, but if you want to use them with other
+device, change `encode_mode` in `zmake.json` to match your device:
+
+| `encode_mode`       | Devices                                            |
+|---------------------|----------------------------------------------------|
+| `dialog`            | Mi Band 7, Amazfit Band 7, Amazfit GTS 4 Mini      |
+| `nxp`               | GTS 3/4, GTR 3/4, GTR 3 Pro, T-Rex 2/Ultra, Falcon |
+| Not supported (MHS) | GTR Mini                                           |
+
 What they can do?
 -----------------
 
