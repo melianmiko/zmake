@@ -90,7 +90,7 @@ def handle_assets(context: ZMakeContext):
             continue
 
         try:
-            image, file_type = image_io.load_auto(file)
+            image, file_type = image_io.load_auto(file, context.config["encode_mode"])
             target_type = context.get_img_target_type(file)
             if file_type == target_type or file_type == "N/A":
                 context.logger.info(f"Copy asset as is {file}")
@@ -106,7 +106,7 @@ def handle_assets(context: ZMakeContext):
             if target_type in ["TGA-P", "TGA-RLP"] and not image.getcolors():
                 image = utils.image_color_compress(image, None, context.logger)
 
-            ret = image_io.save_auto(image, dest / rel_name, target_type)
+            ret = image_io.save_auto(image, dest / rel_name, target_type, context.config["encode_mode"])
             assert ret is True
             utils.increment_or_add(statistics, target_type)
         except Exception as e:
@@ -278,7 +278,7 @@ def zepp_preview(context: ZMakeContext):
         pv = Image.open(context.path / "dist/preview.png")
         pv.thumbnail((128, 326))
         pv = pv.convert("RGB").quantize(256)
-        image_io.save_auto(pv, context.path / "build/assets/preview.png", "TGA-RLP")
+        image_io.save_auto(pv, context.path / "build/assets/preview.png", "TGA-RLP", context.config["encode_mode"])
 
     context.logger.info("  Done")
 

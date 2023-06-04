@@ -26,10 +26,10 @@ def _parse_tga_header(header):
     return palette_length, width, height
 
 
-def _fetch_palette(f, palette_length, swap_red_and_blue):
+def _fetch_palette(f, palette_length, encode_mode):
     palette_raw = bytearray()
     for i in range(palette_length):
-        if swap_red_and_blue:
+        if encode_mode == "nxp":
             r, g, b, a = f.read(4)
         else:
             b, g, r, a = f.read(4)
@@ -38,10 +38,10 @@ def _fetch_palette(f, palette_length, swap_red_and_blue):
     return palette_raw
 
 
-def load_palette_tga(f, swap_red_and_blue=False):
+def load_palette_tga(f, encode_mode="dialog"):
     """
     Read Tga with DATA TYPE 1
-    :param swap_red_and_blue: Swap red and blue channels (some devices require that)
+    :param encode_mode:
     :param f: opened file
     :return: PIL image
     """
@@ -57,7 +57,7 @@ def load_palette_tga(f, swap_red_and_blue=False):
     palette_length, width, height = _parse_tga_header(header)
 
     # Read RAW img data
-    palette_raw = _fetch_palette(f, palette_length, swap_red_and_blue)
+    palette_raw = _fetch_palette(f, palette_length, encode_mode)
     img_data = f.read(width*height)
     if len(f.peek()) > 0:
         log.debug("WARNING: NOT ALL DATA PARSED, looks like it's a bug")
@@ -72,10 +72,10 @@ def load_palette_tga(f, swap_red_and_blue=False):
     return image.convert("RGBA")
 
 
-def load_rl_palette_tga(f, swap_red_and_blue=False):
+def load_rl_palette_tga(f, encode_mode="dialog"):
     """
     Read Tga with DATA TYPE 9
-    :param swap_red_and_blue: Swap red and blue channels (some devices require that)
+    :param encode_mode:
     :param f: opened file
     :return: PIL image
     """
@@ -91,7 +91,7 @@ def load_rl_palette_tga(f, swap_red_and_blue=False):
     palette_length, width, height = _parse_tga_header(header)
 
     # Read RAW img data
-    palette_raw = _fetch_palette(f, palette_length, swap_red_and_blue)
+    palette_raw = _fetch_palette(f, palette_length, encode_mode)
     img_data = bytearray()
 
     while len(img_data) < width * height:
@@ -118,10 +118,10 @@ def load_rl_palette_tga(f, swap_red_and_blue=False):
     return image.convert("RGBA")
 
 
-def load_truecolor_tga(f, swap_red_and_blue=False):
+def load_truecolor_tga(f, encode_mode="dialog"):
     """
     Read TGA with DATA TYPE 2
-    :param swap_red_and_blue: Swap red and blue channels (some devices require that)
+    :param encode_mode:
     :param f: opened file
     :return: PIL image
     """
@@ -147,7 +147,7 @@ def load_truecolor_tga(f, swap_red_and_blue=False):
             g = (v & 0b0000011111100000) >> 5
             b = v & 0b0000000000011111
 
-            if swap_red_and_blue:
+            if encode_mode == "nxp":
                 r, b = b, r
 
             unpacked.append((int(r * 255/31),
@@ -157,7 +157,7 @@ def load_truecolor_tga(f, swap_red_and_blue=False):
     elif colormode == 32:
         unpacked = []
         for i in range(height * width):
-            if swap_red_and_blue:
+            if encode_mode == "nxp":
                 r, g, b, a = f.read(4)
             else:
                 b, g, r, a = f.read(4)

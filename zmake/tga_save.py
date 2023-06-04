@@ -3,7 +3,7 @@ from pathlib import Path
 from PIL import Image
 
 
-def save_truecolor_tga(img: Image.Image, path: Path, depth, swap_red_and_blue=False):
+def save_truecolor_tga(img: Image.Image, path: Path, depth, encode_mode="dialog"):
     img = img.convert("RGBA")
     data = bytearray()
 
@@ -28,14 +28,14 @@ def save_truecolor_tga(img: Image.Image, path: Path, depth, swap_red_and_blue=Fa
             g = round(63/255 * pixel[1])
             b = round(31/255 * pixel[2])
 
-            if swap_red_and_blue:
+            if encode_mode == "nxp":
                 r, b = b, r
 
             data.append(((g & 0b111) << 5) + b)
             data.append((r << 3) + (g >> 3))
     elif depth == 32:
         for r, g, b, a in img.getdata():
-            if swap_red_and_blue:
+            if encode_mode == "nxp":
                 data.extend([r, g, b, a])
             else:
                 data.extend([b, g, r, a])
@@ -46,7 +46,7 @@ def save_truecolor_tga(img: Image.Image, path: Path, depth, swap_red_and_blue=Fa
         f.write(data)
 
 
-def _prep_palette_base(img, swap_red_and_blue):
+def _prep_palette_base(img, encode_mode):
     """
     Prepare data with palette header and data.
 
@@ -55,6 +55,16 @@ def _prep_palette_base(img, swap_red_and_blue):
     """
     data = bytearray()
 
+    # TGA Width fix
+    real_width = img.width
+    if encode_mode == "nxp" and real_width % 16 != 0:
+        tga_width = real_width + 16 - (real_width % 16)
+        assert tga_width % 16 == 0
+        new_img = Image.new(img.mode, (tga_width, img.height))
+        new_img.paste(img)
+        img = new_img
+
+    # Palette data
     palette = []
     assert img.getcolors() is not None
 
@@ -79,31 +89,31 @@ def _prep_palette_base(img, swap_red_and_blue):
 
     # ID data
     data.extend(b"\x53\x4f\x4d\x48")
-    data.extend(img.width.to_bytes(2, byteorder="little"))
+    data.extend(real_width.to_bytes(2, byteorder="little"))
     data.extend(b"\0" * 40)
 
     # Palette
     for r, g, b, a in palette:
-        if swap_red_and_blue:
+        if encode_mode == "nxp":
             value = r, g, b, a
         else:
             value = b, g, r, a
         data.extend(value)
 
-    return data, palette
+    return img, data, palette
 
 
-def save_rl_palette_tga(img: Image.Image, path: Path, swap_red_and_blue=False):
+def save_rl_palette_tga(img: Image.Image, path: Path, encode_mode="dialog"):
     """
     Write PIL image to TGA file with DATA TYPE 9
 
-    :param swap_red_and_blue:
+    :param encode_mode:
     :param img: source img
     :param path: dest path
     :return:
     """
     img = img.convert("RGBA")
-    data, palette = _prep_palette_base(img, swap_red_and_blue)
+    img, data, palette = _prep_palette_base(img, encode_mode)
     data[2] = 9
 
     # Image data
@@ -146,17 +156,17 @@ def save_rl_palette_tga(img: Image.Image, path: Path, swap_red_and_blue=False):
         f.write(data)
 
 
-def save_palette_tga(img: Image.Image, path: Path, swap_red_and_blue=False):
+def save_palette_tga(img: Image.Image, path: Path, encode_mode="dialog"):
     """
     Write PIL image to TGA file with DATA TYPE 1
 
-    :param swap_red_and_blue: Swap red and blue channels
+    :param encode_mode: Swap red and blue channels
     :param img: source img
     :param path: dest path
     :return:
     """
     img = img.convert("RGBA")
-    data, palette = _prep_palette_base(img, swap_red_and_blue)
+    img, data, palette = _prep_palette_base(img, encode_mode)
 
     # Image data
     for pixel in img.getdata():

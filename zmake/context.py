@@ -44,7 +44,6 @@ class ZMakeContext:
         self.logger = logging.getLogger("zmake")
 
         self.load_config()
-        self.apply_config()
 
     def load_config(self):
         self.logger.info("Use config files:")
@@ -74,7 +73,7 @@ class ZMakeContext:
         return result
 
     def perform_auto(self):
-        if self.path.name.endswith(".bin"):
+        if self.path.name.endswith(".bin") or self.path.name.endswith(".zip"):
             self.logger.info("We think that you want to unpack this file")
             self.process_bin()
         elif self.path.is_dir() and next(self.path.iterdir(), False) is False:
@@ -174,7 +173,7 @@ class ZMakeContext:
         statistics = {}
         for file in iterator:
             try:
-                image, file_type = image_io.load_auto(file)
+                image, file_type = image_io.load_auto(file, self.config["encode_mode"])
                 target_type = self.get_img_target_type(file)
                 if file_type == target_type or file_type == "N/A":
                     continue
@@ -187,7 +186,7 @@ class ZMakeContext:
                 if target_type in ["TGA-P", "TGA-RLP"] and not image.getcolors():
                     image = utils.image_color_compress(image, file, self.logger)
 
-                ret = image_io.save_auto(image, file, target_type)
+                ret = image_io.save_auto(image, file, target_type, self.config["encode_mode"])
                 assert ret is True
                 utils.increment_or_add(statistics, target_type)
             except Exception as e:
@@ -204,7 +203,7 @@ class ZMakeContext:
 
         for file in iterator:
             try:
-                image, file_type = image_io.load_auto(file)
+                image, file_type = image_io.load_auto(file, self.config["encode_mode"])
                 if file_type == "PNG" or file_type == "N/A":
                     continue
 
@@ -212,9 +211,6 @@ class ZMakeContext:
             except Exception as e:
                 self.logger.exception(f"FAILED, file {file}")
                 raise e
-
-    def apply_config(self):
-        image_io.swap_red_and_blue = self.config["swap_red_and_blue"]
 
     def process_project(self):
         with open(self.path / "app.json", "r", encoding="utf8") as f:

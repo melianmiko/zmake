@@ -1,8 +1,9 @@
 {
   "def_format": "TGA-P",
   "auto_rgba": true,
-  "swap_red_and_blue": false,
   "target_dir_override": "",
+
+  "encode_mode": "dialog",
 
   "esbuild": false,
   "esbuild_params": "--bundle",
