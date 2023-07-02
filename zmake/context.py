@@ -213,8 +213,26 @@ class ZMakeContext:
                 self.logger.exception(f"FAILED, file {file}")
                 raise e
 
+    def check_override_relative(self, rel_name):
+        if rel_name in self.config["overrides"]:
+            new_name = self.config["overrides"][rel_name]
+            self.logger.info(f"  Override {rel_name} -> {new_name}")
+            return new_name
+        return rel_name
+
+    def check_override(self, file: Path):
+        rel_name = str(file)[len(str(self.path)) + 1:]
+        if rel_name.endswith("/"):
+            rel_name = rel_name[:-1]
+
+        if rel_name in self.config["overrides"]:
+            new_name = self.config["overrides"][rel_name]
+            self.logger.info(f"  Override {rel_name} -> {new_name}")
+            return self.path / new_name
+        return file
+
     def process_project(self):
-        self.app_json = read_json(self.path / "app.json")
+        self.app_json = read_json(self.check_override(self.path / "app.json"))
 
         self.target_dir = "watchface"
         if self.app_json["app"]["appType"] == "app":

@@ -6,6 +6,8 @@
   "encode_mode": "dialog",
   "package_extension": "bin",
 
+  "overrides": {},
+
   "esbuild": false,
   "esbuild_params": "--bundle",
 

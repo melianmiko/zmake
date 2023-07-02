@@ -35,6 +35,11 @@ def prepare(context: ZMakeContext):
     path_build.mkdir()
     path_dist.mkdir()
 
+    with open(path_build / ".gitignore", "w") as f:
+        f.write("*\n")
+    with open(path_dist / ".gitignore", "w") as f:
+        f.write("*\n")
+
     # Prepare JS target dir
     (path_build / context.target_dir).mkdir()
 
@@ -84,6 +89,7 @@ def handle_assets(context: ZMakeContext):
     statistics = {}
     for file in source.rglob("**/*"):
         rel_name = str(file)[len(str(source)) + 1:]
+        file = context.check_override(file)
 
         if file.is_dir():
             os.mkdir(dest / rel_name)
@@ -113,6 +119,10 @@ def handle_assets(context: ZMakeContext):
             context.logger.exception(f"FAILED, file {file}")
             raise e
 
+    if context.config["with_zeus_compat"] and (context.path / "assets" / "raw").is_dir():
+        context.logger.info("  Copy RAW files (zeus_compat)")
+        shutil.copytree(context.path / "assets" / "raw", dest / "raw")
+
     for key in statistics:
         context.logger.info(f"  {statistics[key]} saved in {key} format")
 
@@ -135,7 +145,9 @@ def common_files(context: ZMakeContext):
 @build_handler("Build app.js")
 def handle_appjs(context: ZMakeContext):
     context.logger.info("Processing app.js:")
-    if not (context.path / "app.js").is_file():
+
+    app_js = context.check_override(context.path / "app.js")
+    if not app_js.is_file():
         shutil.copy(f"{utils.APP_PATH}/data/app.js", context.path / "build/app.js")
         context.logger.info("  Use our app.js template")
         return
@@ -155,11 +167,13 @@ def handle_appjs(context: ZMakeContext):
         if params != "":
             command.extend(params.split(" "))
 
-        command.append(context.path / "app.js")
+        command.append(app_js)
         run_ext_tool(command, context, "ESBuild")
+
+        if app_js != (context.path / "app.js"):
+            shutil.move(context.path / "build" / app_js.name, context.path / "build" / "app.js")
     else:
-        shutil.copy(context.path / "app.js",
-                    context.path / "build" / "app.js")
+        shutil.copy(app_js, context.path / "build" / "app.js")
 
     context.logger.info("Done")
 
@@ -194,7 +208,7 @@ def handle_src(context: ZMakeContext):
     context.logger.info(f"  Done")
 
 
-@build_handler("Process exiting pages")
+@build_handler("Process JS files")
 def handle_app(context: ZMakeContext):
     if not (context.path / context.target_dir).is_dir():
         return
@@ -218,7 +232,10 @@ def handle_app(context: ZMakeContext):
                         "--log-level=warning",
                         f"--outdir={out_dir}",
                         "--format=iife"])
-        command.extend(list(src_dir.rglob("**/*.js")))
+
+        for file in src_dir.rglob("**/*.js"):
+            command.append(context.check_override(file))
+
         run_ext_tool(command, context, "ESBuild")
         context.logger.info("  ESBuild finished successfully")
     else:
@@ -228,7 +245,7 @@ def handle_app(context: ZMakeContext):
             dest_file = out_dir / relative_path
             dest_file.parent.mkdir(parents=True, exist_ok=True)
 
-            shutil.copy(file, dest_file)
+            shutil.copy(context.check_override(file), dest_file)
             i += 1
         context.logger.info(f"  Copied {i} files")
 
@@ -286,7 +303,6 @@ def zepp_preview(context: ZMakeContext):
 def package(context: ZMakeContext):
     context.logger.info("Packaging:")
     basename = context.path.name
-    encode_mode = context.config["encode_mode"]
 
     device_extension = context.config["package_extension"]
     device_zip = context.path / "dist" / f"{basename}.{device_extension}"
