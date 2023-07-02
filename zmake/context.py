@@ -8,6 +8,7 @@ from pathlib import Path
 from zipfile import ZipFile
 
 from zmake import utils, image_io, constants
+from zmake.utils import read_json
 
 BUILD_HANDLERS = []
 
@@ -213,8 +214,7 @@ class ZMakeContext:
                 raise e
 
     def process_project(self):
-        with open(self.path / "app.json", "r", encoding="utf8") as f:
-            self.app_json = json.loads(f.read())
+        self.app_json = read_json(self.path / "app.json")
 
         self.target_dir = "watchface"
         if self.app_json["app"]["appType"] == "app":

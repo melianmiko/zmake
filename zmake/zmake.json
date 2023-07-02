@@ -4,7 +4,7 @@
   "target_dir_override": "",
 
   "encode_mode": "dialog",
-  "package_extension": "zip",
+  "package_extension": "bin",
 
   "esbuild": false,
   "esbuild_params": "--bundle",

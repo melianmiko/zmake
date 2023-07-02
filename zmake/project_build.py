@@ -142,11 +142,6 @@ def handle_appjs(context: ZMakeContext):
 
     if context.config["esbuild"]:
         command = ["esbuild"]
-        params = context.config['esbuild_params']
-
-        if params != "":
-            command.extend(params.split(" "))
-
         if context.config["with_zeus_compat"]:
             context.logger.info("  Add zeus_fixes_inject.js")
             command.append(f"--inject:{utils.APP_PATH / 'data' / 'zeus_fixes_inject.js'}")
@@ -154,9 +149,13 @@ def handle_appjs(context: ZMakeContext):
         command.extend(["--platform=node",
                         f"--outdir={context.path / 'build'}",
                         "--format=iife",
-                        "--log-level=warning",
-                        context.path / "app.js"])
+                        "--log-level=warning"])
 
+        params = context.config['esbuild_params']
+        if params != "":
+            command.extend(params.split(" "))
+
+        command.append(context.path / "app.js")
         run_ext_tool(command, context, "ESBuild")
     else:
         shutil.copy(context.path / "app.js",

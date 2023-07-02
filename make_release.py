@@ -10,6 +10,8 @@ from zmake import VERSION
 
 if os.path.isdir("dist"):
     shutil.rmtree("dist")
+if os.path.isdir("build"):
+    shutil.rmtree("build")
 
 if sys.platform == "win32":
     pyinstaller = "./venv/Scripts/pyinstaller"

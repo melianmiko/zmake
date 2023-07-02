@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import sys
@@ -12,6 +13,20 @@ if getattr(sys, 'frozen', False):
     APP_PATH = Path(os.path.dirname(sys.executable))
 else:
     APP_PATH = Path(os.path.dirname(__file__))
+
+
+def read_json(path: Path):
+    with open(path, "rb") as f:
+        data = f.read()
+
+    for charset in ["utf8", "utf_8_sig", "utf16"]:
+        try:
+            body = json.loads(data.decode(charset))
+            return body
+        except Exception:
+            print(f"Decode with {charset} failed, retry...")
+
+    raise ValueError("Can't decode JSON-file")
 
 
 def get_app_asset(name: str):
