@@ -19,7 +19,7 @@ Installation & Usage
 --------------------
 
 Prebuild binaries can be downloaded 
-[here](https://melianmiko.ru/en/zmake).
+[here](https://mmk.pw/en/zmake).
 Unpack downloaded ZIP somewhere. And that's all.
 
 Windows and macOS users can run program via drag and  drop. 
@@ -122,15 +122,7 @@ Result will appear in `dist` directory.
 
 Donate
 -------
-
-If you're from Russia, Belarus or other near country
-[look here](https://melianmiko.ru/donate/).
-
-Due to all known reasons I can't receive donations from
-other countries for now, only in cryptocurrency. Or,
-if you're in Turkey, to OlduBill virtual card. List
-of actual addresses can be seen 
-[here](https://melianmiko.ru/en/donate).
+[Look here](https://mmk.pw/en/donate).
 
 License
 ---------

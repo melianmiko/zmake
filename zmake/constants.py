@@ -15,7 +15,7 @@ If you push
 - directory with `app.json`, we'll try to build it as project
 - other directory or file, we'll try to convert it to PNG or back to TGA
 
-https://melianmiko.ru/en/zmake
+https://mmk.pw/en/zmake
 https://github.com/melianmiko/zmake
 """
 

@@ -4,7 +4,7 @@
 
 PROJECT_ID=zmake
 PROJECT_SERVER_DIR=zmake
-PROJECT_URL=https://melianmiko.ru/en/zmake
+PROJECT_URL=https://mmk.pw/en/zmake
 
 WITH_OSX=true
 WITH_WIN32=true

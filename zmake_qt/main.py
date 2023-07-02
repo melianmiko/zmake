@@ -30,10 +30,10 @@ class GuideWindow(QMainWindow, Ui_GuideWindow):
         subprocess.run(["open", APP_PATH / "data"])
 
     def go_donate(self):
-        webbrowser.open("https://melianmiko.ru/donate")
+        webbrowser.open("https://mmk.pw/donate")
 
     def go_website(self):
-        webbrowser.open("https://melianmiko.ru/en/zmake")
+        webbrowser.open("https://mmk.pw/en/zmake")
 
 
 class ProgressWindow(QMainWindow, Ui_ProgressWindow):

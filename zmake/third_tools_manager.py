@@ -9,7 +9,7 @@ NO_TOOL_MSG = """
 Please install them, or disable usage of that tool in config,
 if it don't required to build your application.
 
-For more information, check https://melianmiko.ru/en/zmake/guide/."""
+For more information, check https://mmk.pw/en/zmake/guide/."""
 
 
 def run_ext_tool(command, context: ZMakeContext, display_name: str):
