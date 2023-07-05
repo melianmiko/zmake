@@ -7,7 +7,7 @@ from collections import Counter
 from pathlib import Path
 from zipfile import ZipFile
 
-from zmake import utils, image_io, constants
+from zmake import utils, image_io, constants, zab_patch
 from zmake.utils import read_json
 
 BUILD_HANDLERS = []
@@ -73,10 +73,18 @@ class ZMakeContext:
             result = input(f"{options} > ")
         return result
 
+    def ask_input(self, message):
+        self.logger.info(message)
+        result = input("> ")
+        return result
+
     def perform_auto(self):
         if self.path.name.endswith(".bin") or self.path.name.endswith(".zip"):
             self.logger.info("We think that you want to unpack this file")
             self.process_bin()
+        elif self.path.name.endswith(".zab"):
+            self.logger.info("We think that you want to patch this ZAB for self-hosting")
+            self.process_zab()
         elif self.path.is_dir() and next(self.path.iterdir(), False) is False:
             self.logger.info("We think that you want to create new project in this empty dir")
             self.process_empty()
@@ -105,6 +113,20 @@ class ZMakeContext:
                     self.path / source_dirname / "index.js")
         shutil.copy(utils.APP_PATH / "data" / "app.js",
                     self.path / "app.js")
+
+    def process_zab(self):
+        if "zab_base_url" not in self.config:
+            self.logger.info("")
+            self.logger.info("To use this feature, ZMake need to know URL where files will be published.")
+            self.logger.info("This is required for QR-code and minor config file generation. You can add")
+            self.logger.info("your URL to 'zmake.json' with 'zab_base_url' key, if you don't want to answer")
+            self.logger.info("to this later.")
+            self.logger.info("")
+            base_url = self.ask_input("Provide full URL where you want to store folder with this app.")
+        else:
+            base_url = self.config["zab_base_url"]
+
+        zab_patch.process(self.path, base_url)
 
     def process_bin(self):
         dest = Path(str(self.path)[:-4])
