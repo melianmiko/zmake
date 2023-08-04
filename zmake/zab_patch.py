@@ -16,6 +16,7 @@ source_to_device = {
     8192257: "Cheetah",
     8126720: "Cheetah Pro",
     8126721: "Cheetah Pro",
+    8454401: "Bip 5",
     250: "GTR Mini",
     251: "GTR Mini",
     7930112: "GTR 4",
@@ -53,6 +54,13 @@ def process(zab_path: Path, server_url: str):
     mapping_data = {"source_redirect": {}, "device_qr": {}}
     manifest = json.loads(zab.read("manifest.json"))
 
+    # Try to load app.json...
+    app_json_path = zab_path.parent.parent / "app.json"
+    app_json = {}
+    if app_json_path.is_file():
+        with app_json_path.open("r") as f:
+            app_json = json.loads(f.read())
+
     # Prepare links/paths
     server_id = zab_path.name.split("-")[0]
     output = zab_path.parent / "serve" / server_id
@@ -77,7 +85,11 @@ def process(zab_path: Path, server_url: str):
             redirect_url, qr_url = process_wf_zpk(zpk_data, zpk_info, output, filename, f"{server_url}/{server_id}")
 
         # Identify device
-        device_qr, source_maps = get_device_map(zpk_info, redirect_url, qr_url)
+        if "deviceSource" in zpk_info:
+            device_qr, source_maps = get_device_map(zpk_info, redirect_url, qr_url)
+        else:
+            print("WARN: No deviceSource in manifest, try to use app.json for mapping")
+            device_qr, source_maps = get_device_map_app_json(app_json, zpk_info, filename, redirect_url, qr_url)
         mapping_data["source_redirect"].update(source_maps)
         mapping_data["device_qr"].update(device_qr)
 
@@ -94,6 +106,11 @@ def process(zab_path: Path, server_url: str):
     zab.close()
 
     return output
+
+
+def get_device_map_app_json(app_json, zpk_info, filename, redirect_url, qr_url):
+    target = filename.split("-" + zpk_info["platforms"][0]['cpuPlatform'])[0]
+    return get_device_map(app_json["targets"][target], redirect_url, qr_url)
 
 
 def get_device_map(zpk_info, redirect_url, qr_url):

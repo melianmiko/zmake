@@ -1,11 +1,11 @@
-zmake (1.9.1-1) bookworm jammy kinetic lunar; urgency=medium
+zmake (1.9.1-2) bookworm jammy kinetic lunar; urgency=medium
 
   * Support of utf8bom, utf16 app.json encoding
   * Add .gitignore to build/dist folders for compat with `zeus dev`
   * New: overrides feature, describe list of overriden files in "zmake.json"
   * Fix: default output extension is now BIN
 
- -- MelianMiko <melianmiko@gmail.com>  Sun, 02 Jul 2023 17:47:08 +0700
+ -- MelianMiko <support@mmk.pw>  Sun, 02 Jul 2023 17:47:08 +0700
 
 zmake (1.9-1) bookworm jammy kinetic lunar; urgency=medium
 
