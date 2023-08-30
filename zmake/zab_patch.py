@@ -16,6 +16,7 @@ source_to_device = {
     8192257: "Cheetah",
     8126720: "Cheetah Pro",
     8126721: "Cheetah Pro",
+    8257793: "Cheetah Square",
     8454401: "Bip 5",
     250: "GTR Mini",
     251: "GTR Mini",
