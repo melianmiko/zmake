@@ -10,6 +10,9 @@ from zipfile import ZipFile, ZIP_DEFLATED
 from qrcode import QRCode, ERROR_CORRECT_L
 
 source_to_device = {
+    8519936: "Balance",
+    8519937: "Balance",
+    8519939: "Balance",
     6553856: "T-Rex Ultra",
     6553857: "T-Rex Ultra",
     8192256: "Cheetah",
