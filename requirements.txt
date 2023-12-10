@@ -1,5 +1,5 @@
-Pillow==10.0.1
-pyinstaller==5.13
-pyinstaller-hooks-contrib==2022.8
-PySide6-Essentials==6.5.0
+Pillow==10.1.0
+pyinstaller==6.2.0
+pyinstaller-hooks-contrib==2023.10
+PySide6-Essentials==6.6.1
 qrcode==7.4.2
