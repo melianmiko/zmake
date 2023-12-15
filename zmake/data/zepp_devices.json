@@ -1,0 +1,353 @@
+[
+  {
+    "id": "active_edge",
+    "deviceName": "Amazfit Active Edge",
+    "alernativeDeviceNames": [],
+    "deviceSource": [
+      8388864,
+      8388865
+    ],
+    "chipset": "apollo",
+    "screenShape": "round",
+    "screenWidth": 360,
+    "screenHeight": 360,
+    "screenRadius": 180,
+    "physicalKeysCount": 4,
+    "watchfacePreviewWidth": 243,
+    "watchfacePreviewHeight": 243,
+    "osVersion": 2.1
+  },
+  {
+    "id": "active",
+    "deviceName": "Amazfit Active",
+    "alernativeDeviceNames": [],
+    "deviceSource": [
+      8323328
+    ],
+    "chipset": "apollo",
+    "screenShape": "square",
+    "screenWidth": 390,
+    "screenHeight": 450,
+    "screenRadius": 86,
+    "physicalKeysCount": 1,
+    "watchfacePreviewWidth": 266,
+    "watchfacePreviewHeight": 307,
+    "osVersion": 2.1
+  },
+  {
+    "id": "balance",
+    "deviceName": "Amazfit Balance",
+    "alernativeDeviceNames": [],
+    "deviceSource": [
+      8519936,
+      8519937,
+      8519939
+    ],
+    "chipset": "nxp",
+    "screenShape": "round",
+    "screenWidth": 480,
+    "screenHeight": 480,
+    "screenRadius": 240,
+    "physicalKeysCount": 2,
+    "watchfacePreviewWidth": 324,
+    "watchfacePreviewHeight": 324,
+    "osVersion": 3
+  },
+  {
+    "id": "bip5",
+    "deviceName": "Bip 5",
+    "alernativeDeviceNames": [],
+    "deviceSource": [
+      8454401
+    ],
+    "chipset": "apollo",
+    "screenShape": "square",
+    "screenWidth": 320,
+    "screenHeight": 380,
+    "screenRadius": 160,
+    "physicalKeysCount": 1,
+    "watchfacePreviewWidth": 200,
+    "watchfacePreviewHeight": 238,
+    "osVersion": 2.1
+  },
+  {
+    "id": "trex_ultra",
+    "deviceName": "T-Rex Ultra",
+    "alernativeDeviceNames": [],
+    "deviceSource": [
+      6553856,
+      6553857
+    ],
+    "chipset": "nxp",
+    "screenShape": "round",
+    "screenWidth": 454,
+    "screenHeight": 454,
+    "screenRadius": 227,
+    "physicalKeysCount": 4,
+    "watchfacePreviewWidth": 306,
+    "watchfacePreviewHeight": 306,
+    "osVersion": 2.1
+  },
+  {
+    "id": "cheetah",
+    "deviceName": "Cheetah",
+    "alernativeDeviceNames": [],
+    "deviceSource": [
+      8192256,
+      8192257
+    ],
+    "chipset": "nxp",
+    "screenShape": "round",
+    "screenWidth": 454,
+    "screenHeight": 454,
+    "screenRadius": 227,
+    "physicalKeysCount": 2,
+    "watchfacePreviewWidth": 306,
+    "watchfacePreviewHeight": 306,
+    "osVersion": 2.1
+  },
+  {
+    "id": "cheetah_pro",
+    "deviceName": "Cheetah Pro",
+    "alernativeDeviceNames": [],
+    "deviceSource": [
+      8126720,
+      8126721
+    ],
+    "chipset": "nxp",
+    "screenShape": "round",
+    "screenWidth": 480,
+    "screenHeight": 480,
+    "screenRadius": 240,
+    "physicalKeysCount": 2,
+    "watchfacePreviewWidth": 324,
+    "watchfacePreviewHeight": 324,
+    "osVersion": 2.1
+  },
+  {
+    "id": "cheetah_square",
+    "deviceName": "Cheetah Square",
+    "alernativeDeviceNames": [],
+    "deviceSource": [
+      8257793
+    ],
+    "chipset": "",
+    "screenShape": "",
+    "screenWidth": 390,
+    "screenHeight": 450,
+    "screenRadius": 86,
+    "physicalKeysCount": 3,
+    "watchfacePreviewWidth": 266,
+    "watchfacePreviewHeight": 307,
+    "osVersion": 2.1
+  },
+  {
+    "id": "gtr_mini",
+    "deviceName": "GTR mini",
+    "alernativeDeviceNames": [],
+    "deviceSource": [
+      250,
+      251
+    ],
+    "chipset": "mhs",
+    "screenShape": "round",
+    "screenWidth": 416,
+    "screenHeight": 416,
+    "screenRadius": 208,
+    "physicalKeysCount": 1,
+    "watchfacePreviewWidth": 280,
+    "watchfacePreviewHeight": 280,
+    "osVersion": 2
+  },
+  {
+    "id": "gtr4",
+    "deviceName": "GTR 4",
+    "alernativeDeviceNames": [
+      "Amazfit GTR 4 LE"
+    ],
+    "deviceSource": [
+      7930112,
+      7930113
+    ],
+    "chipset": "nxp",
+    "screenShape": "round",
+    "screenWidth": 466,
+    "screenHeight": 466,
+    "screenRadius": 233,
+    "physicalKeysCount": 2,
+    "watchfacePreviewWidth": 314,
+    "watchfacePreviewHeight": 314,
+    "osVersion": 2.1
+  },
+  {
+    "id": "gts4",
+    "deviceName": "GTS 4",
+    "alernativeDeviceNames": [],
+    "deviceSource": [
+      7995648,
+      7995649
+    ],
+    "chipset": "nxp",
+    "screenShape": "square",
+    "screenWidth": 390,
+    "screenHeight": 450,
+    "screenRadius": 86,
+    "physicalKeysCount": 1,
+    "watchfacePreviewWidth": 266,
+    "watchfacePreviewHeight": 307,
+    "osVersion": 2.1
+  },
+  {
+    "id": "gts4mini",
+    "deviceName": "GTS 4 mini",
+    "alernativeDeviceNames": [],
+    "deviceSource": [
+      246,
+      247
+    ],
+    "chipset": "dialog",
+    "screenShape": "square",
+    "screenWidth": 366,
+    "screenHeight": 384,
+    "screenRadius": 80,
+    "physicalKeysCount": 1,
+    "watchfacePreviewWidth": 228,
+    "watchfacePreviewHeight": 260,
+    "osVersion": 1
+  },
+  {
+    "id": "Falcon",
+    "deviceName": "Falcon",
+    "alernativeDeviceNames": [],
+    "deviceSource": [
+      414,
+      415
+    ],
+    "chipset": "nxp",
+    "screenShape": "round",
+    "screenWidth": 416,
+    "screenHeight": 416,
+    "screenRadius": 208,
+    "physicalKeysCount": 4,
+    "watchfacePreviewWidth": 280,
+    "watchfacePreviewHeight": 280,
+    "osVersion": 2.1
+  },
+  {
+    "id": "ban7",
+    "deviceName": "Amazfit Band 7",
+    "alernativeDeviceNames": [],
+    "deviceSource": [
+      252,
+      253,
+      254
+    ],
+    "chipset": "dialog",
+    "screenShape": "band",
+    "screenWidth": 194,
+    "screenHeight": 368,
+    "screenRadius": 25,
+    "physicalKeysCount": 0,
+    "watchfacePreviewWidth": 152,
+    "watchfacePreviewHeight": 288,
+    "osVersion": 1
+  },
+  {
+    "id": "gtr3pro",
+    "deviceName": "GTR 3 Pro",
+    "alernativeDeviceNames": [
+      "Amazfit GTR 3 Pro LTD"
+    ],
+    "deviceSource": [
+      229,
+      230,
+      6095106
+    ],
+    "chipset": "nxp",
+    "screenShape": "round",
+    "screenWidth": 480,
+    "screenHeight": 480,
+    "screenRadius": 240,
+    "physicalKeysCount": 2,
+    "watchfacePreviewWidth": 324,
+    "watchfacePreviewHeight": 324,
+    "osVersion": 1
+  },
+  {
+    "id": "gtr3",
+    "deviceName": "GTR 3",
+    "alernativeDeviceNames": [],
+    "deviceSource": [
+      226,
+      227
+    ],
+    "chipset": "nxp",
+    "screenShape": "round",
+    "screenWidth": 454,
+    "screenHeight": 454,
+    "screenRadius": 227,
+    "physicalKeysCount": 2,
+    "watchfacePreviewWidth": 306,
+    "watchfacePreviewHeight": 306,
+    "osVersion": 1
+  },
+  {
+    "id": "gts3",
+    "deviceName": "GTS 3",
+    "alernativeDeviceNames": [],
+    "deviceSource": [
+      224,
+      225
+    ],
+    "chipset": "nxp",
+    "screenShape": "square",
+    "screenWidth": 390,
+    "screenHeight": 450,
+    "screenRadius": 86,
+    "physicalKeysCount": 1,
+    "watchfacePreviewWidth": 266,
+    "watchfacePreviewHeight": 307,
+    "osVersion": 1
+  },
+  {
+    "id": "trex2",
+    "deviceName": "T-Rex 2",
+    "alernativeDeviceNames": [],
+    "deviceSource": [
+      418,
+      419
+    ],
+    "chipset": "nxp",
+    "screenShape": "round",
+    "screenWidth": 454,
+    "screenHeight": 454,
+    "screenRadius": 227,
+    "physicalKeysCount": 4,
+    "watchfacePreviewWidth": 306,
+    "watchfacePreviewHeight": 306,
+    "osVersion": 2.1
+  },
+  {
+    "id": "mi_band7",
+    "deviceName": "Mi Band 7",
+    "alernativeDeviceNames": [],
+    "deviceSource": [
+      260,
+      261,
+      262,
+      263,
+      264,
+      265,
+      266
+    ],
+    "chipset": "dialog",
+    "screenShape": "band",
+    "screenWidth": 192,
+    "screenHeight": 490,
+    "screenRadius": 96,
+    "physicalKeysCount": 4,
+    "watchfacePreviewWidth": 128,
+    "watchfacePreviewHeight": 327,
+    "osVersion": 1
+  }
+]

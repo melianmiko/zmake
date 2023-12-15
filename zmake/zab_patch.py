@@ -1,7 +1,5 @@
 import json
 import shutil
-import subprocess
-import sys
 import time
 from io import BytesIO
 from pathlib import Path
@@ -9,51 +7,13 @@ from zipfile import ZipFile, ZIP_DEFLATED
 
 from qrcode import QRCode, ERROR_CORRECT_L
 
-source_to_device = {
-    8519936: "Balance",
-    8519937: "Balance",
-    8519939: "Balance",
-    8388864: "Active Edge",
-    8388865: "Active Edge",
-    8323328: "Active",
-    6553856: "T-Rex Ultra",
-    6553857: "T-Rex Ultra",
-    8192256: "Cheetah",
-    8192257: "Cheetah",
-    8126720: "Cheetah Pro",
-    8126721: "Cheetah Pro",
-    8257793: "Cheetah Square",
-    8454401: "Bip 5",
-    250: "GTR Mini",
-    251: "GTR Mini",
-    7930112: "GTR 4",
-    7930113: "GTR 4",
-    7995648: "GTS 4",
-    7995649: "GTS 4",
-    246: "GTS 4 mini",
-    247: "GTS 4 mini",
-    414: "Falcon",
-    415: "Falcon",
-    252: "Amazfit Band 7",
-    253: "Amazfit Band 7",
-    254: "Amazfit Band 7",
-    229: "GTR 3 Pro",
-    230: "GTR 3 Pro",
-    6095106: "GTR 3 Pro",
-    226: "GTR 3",
-    227: "GTR 3",
-    224: "GTS 3",
-    225: "GTS 3",
-    418: "T-Rex 2",
-    419: "T-Rex 2",
-    260: "Xiaomi Mi Band 7",
-    261: "Xiaomi Mi Band 7",
-    262: "Xiaomi Mi Band 7",
-    263: "Xiaomi Mi Band 7",
-    264: "Xiaomi Mi Band 7",
-    265: "Xiaomi Mi Band 7",
-    266: "Xiaomi Mi Band 7",
-}
+from zmake.utils import APP_PATH
+
+source_to_device = {}
+with open(APP_PATH / "data" / "zepp_devices.json", "r") as f:
+    for obj in json.load(f):
+        for source in obj["deviceSource"]:
+            source_to_device[source] = obj['deviceName']
 
 
 def process(zab_path: Path, server_url: str):
@@ -95,7 +55,7 @@ def process(zab_path: Path, server_url: str):
         if "deviceSource" in zpk_info:
             device_qr, source_maps = get_device_map(zpk_info, redirect_url, qr_url)
         else:
-            print("WARN: No deviceSource in manifest, try to use app.json for mapping")
+            # print("WARN: No deviceSource in manifest, try to use app.json for mapping")
             device_qr, source_maps = get_device_map_app_json(app_json, zpk_info, filename, redirect_url, qr_url)
         mapping_data["source_redirect"].update(source_maps)
         mapping_data["device_qr"].update(device_qr)
@@ -112,7 +72,30 @@ def process(zab_path: Path, server_url: str):
 
     zab.close()
 
+    _get_analytics(mapping_data["source_redirect"].keys())
+
     return output
+
+
+def _get_analytics(sources):
+    print("Device compatability report:")
+    for sid in sources:
+        if sid not in source_to_device:
+            print(f"- Device not supported by zmake: {sid}, it may be unavailable in bundle")
+
+    count_supported = 0
+    unsupported_devices = []
+    for sid in source_to_device:
+        if sid in sources:
+            count_supported += 1
+        elif source_to_device[sid] not in unsupported_devices:
+            unsupported_devices.append(source_to_device[sid])
+
+    print(f"- Device model coverage: {round(count_supported / len(source_to_device.keys()) * 100)}%")
+    if len(unsupported_devices) < 1:
+        print("- App bundle supports all known ZeppOS devices")
+    else:
+        print("- Not supported by app:", ", ".join(unsupported_devices))
 
 
 def get_device_map_app_json(app_json, zpk_info, filename, redirect_url, qr_url):
