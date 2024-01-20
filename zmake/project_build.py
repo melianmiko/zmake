@@ -22,6 +22,14 @@ LIST_COMMON_FILES = [
 ]
 
 
+@build_handler("Pre-build command")
+def post_build(context: ZMakeContext):
+    if context.config.get("pre_build_script", "") == "":
+        return
+
+    subprocess.Popen([os.path.expanduser(context.config["pre_build_script"]), str(context.path)]).wait()
+
+
 @build_handler("Prepare")
 def prepare(context: ZMakeContext):
     path_build = context.path / "build"
@@ -385,4 +393,4 @@ def post_build(context: ZMakeContext):
     if context.config["post_build_script"] == "":
         return
 
-    subprocess.Popen([context.config["post_build_script"], str(context.path)]).wait()
+    subprocess.Popen([os.path.expanduser(context.config["post_build_script"]), str(context.path)]).wait()
