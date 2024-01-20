@@ -111,7 +111,7 @@ cd zmake
 
 # Create and activate venv
 python3.10 -m venv venv
-source venv/bin/active
+source venv/bin/activate
 
 # Install deps and build
 pip install -r requirements.txt
