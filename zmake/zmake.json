@@ -23,7 +23,8 @@
   "pre_build_script": "",
   "post_build_script": "",
 
-  "common_files": [],
+  "common_files": ["README.txt", "LICENSE.txt", "README", "LICENSE", "secondary-widget"],
+  "ignore_files": [".gitignore", ".DS_Store", "Thumbs.db"],
 
   "with_zeus_compat": false,
   "zeus_target": "mi-band7",
