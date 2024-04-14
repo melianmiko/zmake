@@ -13,6 +13,9 @@ if getattr(sys, 'frozen', False):
     APP_PATH = Path(os.path.dirname(sys.executable))
 else:
     APP_PATH = Path(os.path.dirname(__file__))
+if APP_PATH.name == "dist":
+    # We are running from inside 'dist', fix our path
+    APP_PATH = APP_PATH.parent / "zmake"
 
 
 def read_json(path: Path):
