@@ -49,14 +49,17 @@ def process(zab_path: Path, server_url: str):
         if zpk_info["appType"] == "app":
             redirect_url, qr_url = process_app_zpk(zpk_data, output, filename, f"{server_url}/{server_id}")
         else:
-            redirect_url, qr_url = process_wf_zpk(zpk_data, zpk_info, output, filename, f"{server_url}/{server_id}")
+            redirect_url, qr_url, wf_json_data = process_wf_zpk(zpk_data, zpk_info, output, filename, f"{server_url}/{server_id}")
 
         # Identify device
-        if "deviceSource" in zpk_info:
-            device_qr, source_maps = get_device_map(zpk_info, redirect_url, qr_url)
-        else:
-            # print("WARN: No deviceSource in manifest, try to use app.json for mapping")
-            device_qr, source_maps = get_device_map_app_json(app_json, zpk_info, filename, redirect_url, qr_url)
+        # if "deviceSource" in zpk_info:
+        device_qr, source_maps = get_device_map(zpk_info, redirect_url, qr_url)
+        # else:
+        # device_qr, source_maps = get_device_map_app_json(app_json, zpk_info, filename, redirect_url, qr_url)
+        if zpk_info["appType"] == "watchface":
+            wf_json_data["devices"] = list(source_maps.keys())
+            with open(output / filename.replace(".zpk", ".json"), "w") as f:
+                f.write(json.dumps(wf_json_data))
         mapping_data["source_redirect"].update(source_maps)
         mapping_data["device_qr"].update(device_qr)
 
@@ -99,7 +102,8 @@ def _get_analytics(sources):
 
 
 def get_device_map_app_json(app_json, zpk_info, filename, redirect_url, qr_url):
-    target = filename.split("-" + zpk_info["platforms"][0]['cpuPlatform'])[0]
+    #target = filename.split("-" + zpk_info["platforms"][0]['cpuPlatform'])[0]
+    target = list(app_json["targets"].keys())[0]
     return get_device_map(app_json["targets"][target], redirect_url, qr_url)
 
 
@@ -150,21 +154,17 @@ def process_wf_zpk(zpk_data, zpk_info, output: Path, filename: str, download_url
     with open(output / wf_png_fn, "wb") as f:
         f.write(preview_data)
 
-    # Create JSON for fucking Zepp app
     wf_json_fn = filename.replace(".zpk", ".json")
-    with open(output / wf_json_fn, "w") as f:
-        f.write(json.dumps({
-            "appid": bin_manifest["app"]["appId"],
-            "name": bin_manifest["app"]["appName"],
-            "updated_at": round(time.time() / 1000),
-            "url": download_url + "/" + wf_bin_fn,
-            "preview": download_url + "/" + wf_png_fn,
-            "devices": [i['deviceSource'] for i in zpk_info["platforms"]]
-        }))
-
     redirect_url = download_url + "/" + wf_json_fn
     qr_url = download_url.replace("https:", "watchface:") + "/" + wf_json_fn
-    return redirect_url, qr_url
+    return redirect_url, qr_url, {
+        "appid": bin_manifest["app"]["appId"],
+        "name": bin_manifest["app"]["appName"],
+        "updated_at": round(time.time() / 1000),
+        "url": download_url + "/" + wf_bin_fn,
+        "preview": download_url + "/" + wf_png_fn,
+        "devices": []
+    }
 
 
 def process_app_zpk(zpk_data, output: Path, filename: str, download_url: str):
