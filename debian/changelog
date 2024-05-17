@@ -1,3 +1,10 @@
+zmake (1.9.2-1) bookworm trixie jammy mantic noble; urgency=medium
+
+  * Add ZAB patcher
+  * Minor bugfixes
+
+ -- MelianMiko <support@mmk.pw>  Fri, 17 May 2024 21:16:10 +0700
+
 zmake (1.9.1-2) bookworm jammy kinetic lunar; urgency=medium
 
   * Support of utf8bom, utf16 app.json encoding
