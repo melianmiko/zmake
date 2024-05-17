@@ -13,13 +13,21 @@ from zmake import utils, image_io, constants
 from zmake.context import build_handler, ZMakeContext
 from zmake.third_tools_manager import run_ext_tool
 
-LIST_COMMON_FILES = [
-    "README.txt",
-    "LICENSE.txt",
-    "README",
-    "LICENSE",
-    "secondary-widget"
-]
+
+def should_ignore_file(filename: str, context: ZMakeContext):
+    for file_to_ignore in context.config.get("ignore_files", [".DS_Store", "Thumbs.db"]):
+        if file_to_ignore in filename:
+            return True
+
+    return False
+
+
+@build_handler("Pre-build command")
+def post_build(context: ZMakeContext):
+    if context.config.get("pre_build_script", "") == "":
+        return
+
+    subprocess.Popen([os.path.expanduser(context.config["pre_build_script"]), str(context.path)]).wait()
 
 
 @build_handler("Prepare")
@@ -130,7 +138,7 @@ def handle_assets(context: ZMakeContext):
 @build_handler("Common files")
 def common_files(context: ZMakeContext):
     context.logger.info("Copying common files:")
-    files = LIST_COMMON_FILES
+    files = context.config["common_files"]
     for fn in files:
         p = context.path / fn
         if p.is_dir():
@@ -309,7 +317,7 @@ def package(context: ZMakeContext):
     with ZipFile(device_zip, "w", ZIP_DEFLATED) as arc:
         for file in (context.path / "build").rglob("**/*"):
             fn = str(file)[len(str(context.path / "build")):]
-            if ".DS_Store" in fn or "Thumbs.db" in fn:
+            if should_ignore_file(fn, context):
                 context.logger.info(f"Skip: {fn}")
                 continue
             arc.write(file, fn)
@@ -341,7 +349,7 @@ def make_zeus_pkg(context: ZMakeContext):
     with ZipFile(device_zip_file, "w", ZIP_DEFLATED) as archive:
         for file in (context.path / "build").rglob("**/*"):
             fn = str(file)[len(str(context.path / "build")):]
-            if ".DS_Store" in fn or "Thumbs.db" in fn:
+            if should_ignore_file(fn, context):
                 continue
             archive.write(file, fn)
 
@@ -385,4 +393,4 @@ def post_build(context: ZMakeContext):
     if context.config["post_build_script"] == "":
         return
 
-    subprocess.Popen([context.config["post_build_script"], str(context.path)]).wait()
+    subprocess.Popen([os.path.expanduser(context.config["post_build_script"]), str(context.path)]).wait()

@@ -81,7 +81,7 @@ def process(zab_path: Path, server_url: str):
 
 
 def _get_analytics(sources):
-    print("Device compatability report:")
+    print("Device compatibility report:")
     for sid in sources:
         if sid not in source_to_device:
             print(f"- Device not supported by zmake: {sid}, it may be unavailable in bundle")

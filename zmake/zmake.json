@@ -20,9 +20,20 @@
   "with_adb": false,
   "adb_path": "/storage/emulated/0/Android/data/com.xiaomi.hm.health/files/watch_skin_local",
 
+  "pre_build_script": "",
   "post_build_script": "",
 
-  "common_files": [],
+  "common_files": [
+    "README.txt", 
+    "LICENSE.txt", 
+    "README", 
+    "LICENSE"
+  ],
+  "ignore_files": [
+    ".gitignore", 
+    ".DS_Store", 
+    "Thumbs.db"
+  ],
 
   "with_zeus_compat": false,
   "zeus_target": "mi-band7",

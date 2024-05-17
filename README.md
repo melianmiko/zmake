@@ -7,7 +7,7 @@
 Unofficial ZeppOS build tool. This application was developed
 for community-driven watchface and application development
 for Xiaomi Smart Band 7. But you also can use it for any other
-ZeppOS-device, if want.
+ZeppOS-device, if you want.
 
 It can:
 - Convert PNG images into ZeppOS-specific TGA and back
@@ -83,7 +83,7 @@ some notices.
 If you don't set compression format via filename, default
 will be used (TGA-P).
 
-If some images have too much colors for TGA-RLP/TGA-P, they 
+If some images have too many colors for TGA-RLP/TGA-P, they
 will be automatically quantized. Backup file will appear in 
 backup directory near application.
 
@@ -111,7 +111,7 @@ cd zmake
 
 # Create and activate venv
 python3.10 -m venv venv
-source venv/bin/active
+source venv/bin/activate
 
 # Install deps and build
 pip install -r requirements.txt
